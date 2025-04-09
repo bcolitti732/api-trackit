@@ -185,9 +185,9 @@ export async function deleteUserById(req: Request, res: Response): Promise<void>
 
 /**
  * @swagger
- * /api/users/{id}:
- *   delete:
- *     summary: Deactivate a user by ID
+ * /api/users/{id}/deactivate:
+ *   patch:
+ *     summary: Change user availability (activate/deactivate)
  *     tags: [Users]
  *     parameters:
  *       - in: path
@@ -198,23 +198,24 @@ export async function deleteUserById(req: Request, res: Response): Promise<void>
  *         description: The user ID
  *     responses:
  *       200:
- *         description: The deactivated user
+ *         description: The updated user with changed availability
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/User'
  *       400:
- *         description: Error deactivating user
+ *         description: Error changing user availability
  */
 export async function deactivateUserById(req: Request, res: Response): Promise<void> {
     try {
         const id = req.params.id;
-        const deactivatedUser = await userService.deactivateUserById(id);
-        res.status(200).json(deactivatedUser);
+        const toggledUser = await userService.deactivateUserById(id);
+        res.status(200).json(toggledUser);
     } catch (error) {
-        res.status(400).json({ message: "Error deactivating user", error });
+        res.status(400).json({ message: "Error toggling user availability", error });
     }
 }
+
 /**
  * @swagger
  * /api/users/{id}/packets:

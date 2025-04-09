@@ -53,7 +53,12 @@ class UserService {
     }
     deactivateUserById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield user_1.UserModel.findByIdAndUpdate(id, { available: false }, { new: true });
+            const user = yield user_1.UserModel.findById(id);
+            if (!user) {
+                throw new Error("User not found");
+            }
+            user.available = !user.available; // para clickar y desclickar al usuario y que se active o desactive en funcion de su estado
+            return yield user.save();
         });
     }
     getUserPacketsById(userId) {

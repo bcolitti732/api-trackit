@@ -211,9 +211,9 @@ function deleteUserById(req, res) {
 }
 /**
  * @swagger
- * /api/users/{id}:
- *   delete:
- *     summary: Deactivate a user by ID
+ * /api/users/{id}/deactivate:
+ *   patch:
+ *     summary: Change user availability (activate/deactivate)
  *     tags: [Users]
  *     parameters:
  *       - in: path
@@ -224,23 +224,23 @@ function deleteUserById(req, res) {
  *         description: The user ID
  *     responses:
  *       200:
- *         description: The deactivated user
+ *         description: The updated user with changed availability
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/User'
  *       400:
- *         description: Error deactivating user
+ *         description: Error changing user availability
  */
 function deactivateUserById(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const id = req.params.id;
-            const deactivatedUser = yield userService.deactivateUserById(id);
-            res.status(200).json(deactivatedUser);
+            const toggledUser = yield userService.deactivateUserById(id);
+            res.status(200).json(toggledUser);
         }
         catch (error) {
-            res.status(400).json({ message: "Error deactivating user", error });
+            res.status(400).json({ message: "Error toggling user availability", error });
         }
     });
 }

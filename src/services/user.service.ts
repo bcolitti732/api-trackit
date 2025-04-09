@@ -43,7 +43,13 @@ export class UserService {
     }
 
     async deactivateUserById(id: string): Promise<IUser | null> {
-        return await UserModel.findByIdAndUpdate(id, { available: false }, { new: true });
+        const user = await UserModel.findById(id);
+        if (!user) {
+            throw new Error("User not found");
+        }
+    
+        user.available = !user.available; // para clickar y desclickar al usuario y que se active o desactive en funcion de su estado
+        return await user.save();
     }
 
     async getUserPacketsById(userId: string): Promise<IUser["packets"] | null> {
