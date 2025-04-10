@@ -4,6 +4,7 @@ import { setupSwagger } from './swagger';
 import corsOptions from './middlewares/cors';
 import userRoutes from './routes/user.routes'; 
 import packetRoutes from './routes/packet.routes';
+import authRoutes from './routes/auth.routes';
 
 const app: express.Application = express();
 
@@ -18,6 +19,7 @@ setupSwagger(app);
 
 app.use('/api/users', userRoutes);
 app.use('/api/packets', packetRoutes);
+app.use('/api/auth', authRoutes)
 
 app.listen(app.get('port'), () => {
     console.log(`Server running on port ${app.get('port')}`);

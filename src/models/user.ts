@@ -46,4 +46,5 @@ const userSchema = new Schema<IUser>({
   packets: [{ type: Schema.Types.ObjectId, ref: "Packet" }],
 });
 
+
 export const UserModel = model("User", userSchema);
