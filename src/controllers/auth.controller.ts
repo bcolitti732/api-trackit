@@ -1,9 +1,30 @@
 import { Request, Response } from "express";
 import { AuthService } from "../services/auth.service";
 
-
 const authService = new AuthService();
 
+/**
+ * @swagger
+ * /api/auth/register:
+ *   post:
+ *     summary: Register a new user
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/RegisterRequest'
+ *     responses:
+ *       201:
+ *         description: User registered successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Bad request
+ */
 export async function register(req: Request, res: Response): Promise<void> {
     try {
         const user = req.body;
@@ -14,6 +35,28 @@ export async function register(req: Request, res: Response): Promise<void> {
     }
 }
 
+/**
+ * @swagger
+ * /api/auth/login:
+ *   post:
+ *     summary: Log in a user
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/LoginRequest'
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AuthTokens'
+ *       400:
+ *         description: Invalid credentials
+ */
 export async function login(req: Request, res: Response): Promise<void> {
     try {
         const { email, password } = req.body;
@@ -24,6 +67,30 @@ export async function login(req: Request, res: Response): Promise<void> {
     }
 }
 
+/**
+ * @swagger
+ * /api/auth/verify:
+ *   post:
+ *     summary: Verify a token
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               token:
+ *                 type: string
+ *               type:
+ *                 type: string
+ *                 enum: [access, refresh]
+ *     responses:
+ *       200:
+ *         description: Token is valid
+ *       400:
+ *         description: Invalid token
+ */
 export async function verifyToken(req: Request, res: Response): Promise<void> {
     try {
         const { token, type } = req.body;
@@ -34,6 +101,33 @@ export async function verifyToken(req: Request, res: Response): Promise<void> {
     }
 }
 
+/**
+ * @swagger
+ * /api/auth/refresh:
+ *   post:
+ *     summary: Refresh an access token
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: New access token generated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AuthTokens'
+ *       400:
+ *         description: Refresh token is required
+ *       401:
+ *         description: Invalid or expired refresh token
+ */
 export async function refreshToken(req: Request, res: Response): Promise<void> {
     try {
         const { refreshToken } = req.body;

@@ -21,13 +21,24 @@ const REFRESH_SECRET = process.env._REFRESH_SECRERT || "refresh+jwt";
 class AuthService {
     register(user) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { email, password } = user;
+            const { email, password, name, phone, available, packets } = user;
+            // Verifica si el usuario ya existe
             const existingUser = yield user_1.UserModel.findOne({ email });
             if (existingUser) {
                 throw new Error("User already exists");
             }
+            // Encripta la contraseña
             const hashedPassword = yield (0, bcrypt_handle_1.encrypt)(password);
-            const newUser = new user_1.UserModel(Object.assign(Object.assign({}, user), { password: hashedPassword }));
+            // Crea un nuevo usuario con todos los datos
+            const newUser = new user_1.UserModel({
+                name,
+                email,
+                password: hashedPassword,
+                phone,
+                available,
+                packets,
+            });
+            // Guarda el usuario en la base de datos
             return yield newUser.save();
         });
     }

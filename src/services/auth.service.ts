@@ -8,13 +8,28 @@ const REFRESH_SECRET = process.env._REFRESH_SECRERT || "refresh+jwt";
 
 export class AuthService {
     async register(user: Partial<IUser>): Promise<IUser> {
-        const { email, password } = user;
+        const { email, password, name, phone, available, packets } = user;
+
+        // Verifica si el usuario ya existe
         const existingUser = await UserModel.findOne({ email });
         if (existingUser) {
             throw new Error("User already exists");
         }
+
+        // Encripta la contraseña
         const hashedPassword = await encrypt(password!);
-        const newUser = new UserModel({ ...user, password: hashedPassword});
+
+        // Crea un nuevo usuario con todos los datos
+        const newUser = new UserModel({
+            name,
+            email,
+            password: hashedPassword,
+            phone,
+            available,
+            packets,
+        });
+
+        // Guarda el usuario en la base de datos
         return await newUser.save();
     }
 

@@ -63,10 +63,60 @@ const options = {
                         },
                     },
                 },
+                AuthTokens: {
+                    type: 'object',
+                    properties: {
+                        accessToken: {
+                            type: 'string',
+                        },
+                        refreshToken: {
+                            type: 'string',
+                        },
+                    },
+                },
+                RegisterRequest: {
+                    type: 'object',
+                    required: ['name', 'email', 'password', 'phone', 'available', 'packets'],
+                    properties: {
+                        name: {
+                            type: 'string',
+                        },
+                        email: {
+                            type: 'string',
+                        },
+                        password: {
+                            type: 'string',
+                        },
+                        phone: {
+                            type: 'string',
+                        },
+                        available: {
+                            type: 'boolean',
+                        },
+                        packets: {
+                            type: 'array',
+                            items: {
+                                type: 'string',
+                            },
+                        },
+                    },
+                },
+                LoginRequest: {
+                    type: 'object',
+                    required: ['email', 'password'],
+                    properties: {
+                        email: {
+                            type: 'string',
+                        },
+                        password: {
+                            type: 'string',
+                        },
+                    },
+                },
             },
         },
     },
-    apis: ['./src/routes/*.ts', './src/controllers/*.ts'],
+    apis: ['./src/routes/*.ts', './src/controllers/*.ts'], // Swagger generará la documentación desde los comentarios
 };
 const swaggerSpec = (0, swagger_jsdoc_1.default)(options);
 function setupSwagger(app) {
