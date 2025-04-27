@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const cors_1 = __importDefault(require("cors"));
 const corsOptions = {
-    origin: 'http://localhost:4200',
-    optionsSuccessStatus: 200
+    origin: ['http://localhost:4200', 'http://localhost:3000'], // Permitir múltiples orígenes
+    optionsSuccessStatus: 200,
 };
 exports.default = (0, cors_1.default)(corsOptions);

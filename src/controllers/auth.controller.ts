@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { AuthService } from "../services/auth.service";
+import { verifyToken } from "../utils/jwt.handle"; // Importamos la función reutilizable de utils
 
 const authService = new AuthService();
 
@@ -63,7 +64,7 @@ export async function login(req: Request, res: Response): Promise<void> {
         const tokens = await authService.login(email, password);
         res.status(200).json(tokens);
     } catch (error) {
-        res.status(400).json({ message: error });
+        res.status(400).json({ message: error});
     }
 }
 
@@ -91,10 +92,16 @@ export async function login(req: Request, res: Response): Promise<void> {
  *       400:
  *         description: Invalid token
  */
-export async function verifyToken(req: Request, res: Response): Promise<void> {
+export async function verifyTokenEndpoint(req: Request, res: Response): Promise<void> {
     try {
         const { token, type } = req.body;
-        const payload = authService.verifyToken(token, type);
+        const payload = verifyToken(token, type); // Usamos la función de utils para verificar el token
+
+        if (!payload) {
+            res.status(400).json({ message: "Invalid or expired token" });
+            return;
+        }
+
         res.status(200).json(payload);
     } catch (error) {
         res.status(400).json({ message: error });
@@ -136,7 +143,7 @@ export async function refreshToken(req: Request, res: Response): Promise<void> {
             return;
         }
 
-        const newAccessToken = await authService.refreshToken(refreshToken);
+        const newAccessToken = await authService.refreshToken(refreshToken); // Lógica delegada al servicio
         res.status(200).json({ accessToken: newAccessToken });
     } catch (error) {
         res.status(401).json({ message: error });

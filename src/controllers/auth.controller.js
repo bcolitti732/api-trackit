@@ -11,9 +11,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.register = register;
 exports.login = login;
-exports.verifyToken = verifyToken;
+exports.verifyTokenEndpoint = verifyTokenEndpoint;
 exports.refreshToken = refreshToken;
 const auth_service_1 = require("../services/auth.service");
+const jwt_handle_1 = require("../utils/jwt.handle"); // Importamos la función reutilizable de utils
 const authService = new auth_service_1.AuthService();
 /**
  * @swagger
@@ -107,11 +108,15 @@ function login(req, res) {
  *       400:
  *         description: Invalid token
  */
-function verifyToken(req, res) {
+function verifyTokenEndpoint(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const { token, type } = req.body;
-            const payload = authService.verifyToken(token, type);
+            const payload = (0, jwt_handle_1.verifyToken)(token, type); // Usamos la función de utils para verificar el token
+            if (!payload) {
+                res.status(400).json({ message: "Invalid or expired token" });
+                return;
+            }
             res.status(200).json(payload);
         }
         catch (error) {
@@ -154,7 +159,7 @@ function refreshToken(req, res) {
                 res.status(400).json({ message: "Refresh token is required" });
                 return;
             }
-            const newAccessToken = yield authService.refreshToken(refreshToken);
+            const newAccessToken = yield authService.refreshToken(refreshToken); // Lógica delegada al servicio
             res.status(200).json({ accessToken: newAccessToken });
         }
         catch (error) {

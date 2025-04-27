@@ -8,16 +8,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const user_1 = require("../models/user");
 const bcrypt_handle_1 = require("../utils/bcrypt.handle");
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const SECRET = process.env._SECRET || "api+jwt";
-const REFRESH_SECRET = process.env._REFRESH_SECRERT || "refresh+jwt";
+const jwt_handle_1 = require("../utils/jwt.handle");
 class AuthService {
     register(user) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -31,9 +26,9 @@ class AuthService {
             const hashedPassword = yield (0, bcrypt_handle_1.encrypt)(password);
             // Crea un nuevo usuario con todos los datos
             const newUser = new user_1.UserModel({
-                name,
                 email,
                 password: hashedPassword,
+                name,
                 phone,
                 available,
                 packets,
@@ -52,42 +47,23 @@ class AuthService {
             if (!isPasswordValid) {
                 throw new Error("Invalid credentials");
             }
-            /** LOGICA DE GENERACION O REFRESCO DEL TOKEN */
-            const accessToken = this.generateToken(user._id.toString(), "access");
-            const refreshToken = this.generateToken(user._id.toString(), "refresh");
+            const accessToken = (0, jwt_handle_1.generateToken)({ id: user._id }, "access");
+            const refreshToken = (0, jwt_handle_1.generateToken)({ id: user._id }, "refresh");
             return { accessToken, refreshToken };
         });
     }
-    generateToken(userId, type) {
-        const secre = type === "access" ? SECRET : REFRESH_SECRET;
-        const expiresIn = type === "access" ? "1h" : "7d";
-        const payload = { id: userId, type };
-        return jsonwebtoken_1.default.sign(payload, SECRET, { expiresIn });
-    }
-    verifyToken(token, type) {
-        const secret = type === "access" ? SECRET : REFRESH_SECRET;
-        return jsonwebtoken_1.default.verify(token, secret);
-    }
     refreshToken(refreshToken) {
         return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const payload = jsonwebtoken_1.default.verify(refreshToken, REFRESH_SECRET);
-                if (payload.type !== "refresh") {
-                    throw new Error("Invalid token type");
-                }
-                // Verifica si el usuario aún existe
-                const user = yield user_1.UserModel.findById(payload.id);
-                if (!user) {
-                    throw new Error("User not found");
-                }
-                // Genera un nuevo token de acceso
-                return this.generateToken(user._id.toString(), "access");
-            }
-            catch (error) {
+            const payload = (0, jwt_handle_1.verifyToken)(refreshToken, "refresh");
+            if (!payload || payload.type !== "refresh") {
                 throw new Error("Invalid or expired refresh token");
             }
+            const user = yield user_1.UserModel.findById(payload.id);
+            if (!user) {
+                throw new Error("User not found");
+            }
+            return (0, jwt_handle_1.generateToken)({ id: user._id }, "access");
         });
     }
 }
 exports.AuthService = AuthService;
-exports.default = new AuthService();
