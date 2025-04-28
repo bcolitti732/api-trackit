@@ -40,8 +40,8 @@ export class AuthService {
             throw new Error("Invalid credentials");
         }
 
-        const accessToken = generateToken({ id: user._id }, "access");
-        const refreshToken = generateToken({ id: user._id }, "refresh");
+        const accessToken = generateToken({ name: user.name }, "access");
+        const refreshToken = generateToken({ name: user.name }, "refresh");
 
         return { accessToken, refreshToken };
     }

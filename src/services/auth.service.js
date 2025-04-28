@@ -47,8 +47,8 @@ class AuthService {
             if (!isPasswordValid) {
                 throw new Error("Invalid credentials");
             }
-            const accessToken = (0, jwt_handle_1.generateToken)({ id: user._id }, "access");
-            const refreshToken = (0, jwt_handle_1.generateToken)({ id: user._id }, "refresh");
+            const accessToken = (0, jwt_handle_1.generateToken)({ name: user.name }, "access");
+            const refreshToken = (0, jwt_handle_1.generateToken)({ name: user.name }, "refresh");
             return { accessToken, refreshToken };
         });
     }
