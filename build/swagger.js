@@ -55,15 +55,15 @@ const options = {
                         available: {
                             type: 'boolean',
                         },
+                        birthdate: {
+                            type: 'string',
+                            format: 'date',
+                        },
                         packets: {
                             type: 'array',
                             items: {
                                 type: 'string',
                             },
-                        },
-                        birthdate: {
-                            type: 'string',
-                            format: 'date',
                         },
                     },
                 },
@@ -97,15 +97,15 @@ const options = {
                         available: {
                             type: 'boolean',
                         },
+                        birthdate: {
+                            type: 'string',
+                            format: 'date',
+                        },
                         packets: {
                             type: 'array',
                             items: {
                                 type: 'string',
                             },
-                        },
-                        birthdate: {
-                            type: 'string',
-                            format: 'date',
                         },
                     },
                 },

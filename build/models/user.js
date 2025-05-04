@@ -30,11 +30,11 @@ const userSchema = new mongoose_1.Schema({
         required: true,
         default: true
     },
-    packets: [{ type: mongoose_1.Schema.Types.ObjectId, ref: "Packet" }],
     birthdate: {
         type: Date,
         required: true,
     },
+    packets: [{ type: mongoose_1.Schema.Types.ObjectId, ref: "Packet" }],
 });
 exports.UserModel = (0, mongoose_1.model)("User", userSchema);
 //# sourceMappingURL=user.js.map

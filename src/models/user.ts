@@ -43,12 +43,14 @@ const userSchema = new Schema<IUser>({
     required: true,
     default: true
   },
-  
-  packets: [{ type: Schema.Types.ObjectId, ref: "Packet" }],
+
   birthdate: {
     type: Date,
     required: true,
   },
+  
+  packets: [{ type: Schema.Types.ObjectId, ref: "Packet" }],
+  
 });
 
 

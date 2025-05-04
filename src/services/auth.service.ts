@@ -4,7 +4,7 @@ import { generateToken, verifyToken } from "../utils/jwt.handle";
 
 export class AuthService {
     async register(user: Partial<IUser>): Promise<IUser> {
-        const { email, password, name, phone, available, packets } = user;
+        const { email, password, name, phone, available, packets, birthdate} = user;
 
         // Verifica si el usuario ya existe
         const existingUser = await UserModel.findOne({ email });
@@ -23,6 +23,7 @@ export class AuthService {
             phone,
             available,
             packets,
+            birthdate,
         });
 
         // Guarda el usuario en la base de datos
