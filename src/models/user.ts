@@ -7,6 +7,8 @@ export interface IUser {
   phone: string;
   available: boolean;
   packets: ObjectId[];
+  //role: "admin" | "user" | "dealer";
+  birthdate: Date;
 }
 
 const userSchema = new Schema<IUser>({
@@ -43,6 +45,10 @@ const userSchema = new Schema<IUser>({
   },
   
   packets: [{ type: Schema.Types.ObjectId, ref: "Packet" }],
+  birthdate: {
+    type: Date,
+    required: true,
+  },
 });
 
 

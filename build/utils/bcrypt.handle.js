@@ -9,17 +9,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.startConnection = startConnection;
-const mongoose_1 = require("mongoose");
-const mongoURI = 'mongodb://localhost:27017/';
-function startConnection() {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            yield (0, mongoose_1.connect)(mongoURI, {});
-            console.log('Connected to MongoDB successfully!');
-        }
-        catch (err) {
-            console.error('Unable to connect to MongoDB. Error:', err);
-        }
-    });
-}
+exports.verified = exports.encrypt = void 0;
+const bcryptjs_1 = require("bcryptjs");
+const encrypt = (pass) => __awaiter(void 0, void 0, void 0, function* () {
+    const passwordHash = yield (0, bcryptjs_1.hash)(pass, 8);
+    return passwordHash;
+});
+exports.encrypt = encrypt;
+const verified = (pass, passHash) => __awaiter(void 0, void 0, void 0, function* () {
+    const isCorrect = yield (0, bcryptjs_1.compare)(pass, passHash);
+    return isCorrect;
+});
+exports.verified = verified;
+//# sourceMappingURL=bcrypt.handle.js.map

@@ -38,7 +38,7 @@ const options = {
                 },
                 User: {
                     type: 'object',
-                    required: ['name', 'email', 'password', 'phone', 'available', 'packets'],
+                    required: ['name', 'email', 'password', 'phone', 'available', 'packets', 'birthdate'],
                     properties: {
                         name: {
                             type: 'string',
@@ -60,6 +60,10 @@ const options = {
                             items: {
                                 type: 'string',
                             },
+                        },
+                        birthdate: {
+                            type: 'string',
+                            format: 'date',
                         },
                     },
                 },
@@ -76,7 +80,7 @@ const options = {
                 },
                 RegisterRequest: {
                     type: 'object',
-                    required: ['name', 'email', 'password', 'phone', 'available', 'packets'],
+                    required: ['name', 'email', 'password', 'phone', 'available', 'packets', 'birthdate'],
                     properties: {
                         name: {
                             type: 'string',
@@ -98,6 +102,10 @@ const options = {
                             items: {
                                 type: 'string',
                             },
+                        },
+                        birthdate: {
+                            type: 'string',
+                            format: 'date',
                         },
                     },
                 },
@@ -116,10 +124,11 @@ const options = {
             },
         },
     },
-    apis: ['./src/routes/*.ts', './src/controllers/*.ts'], // Swagger generará la documentación desde los comentarios
+    apis: ['./src/routes/*.ts', './src/controllers/*.ts'],
 };
 const swaggerSpec = (0, swagger_jsdoc_1.default)(options);
 function setupSwagger(app) {
     console.log('Setting up Swagger');
     app.use('/api-docs', swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swaggerSpec));
 }
+//# sourceMappingURL=swagger.js.map

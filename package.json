@@ -3,8 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
-    "start": "nodemon --exec ts-node src/app.ts"
+    "start": "tsc && node ./src/build/app.js"
   },
   "dependencies": {
     "@types/bcryptjs": "^2.4.6",
