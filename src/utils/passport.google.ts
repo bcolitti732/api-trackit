@@ -6,8 +6,8 @@ import { generateToken } from "./jwt.handle";
 passport.use(
     new GoogleStrategy(
         {
-            clientID: process.env.GOOGLE_CLIENT_ID || '517367796264-iet14ll00r610n659l2vonr6auk9sauu.apps.googleusercontent.com',
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET || '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',
+            clientID: process.env.GOOGLE_CLIENT_ID!,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
             callbackURL: "http://localhost:4000/api/auth/google/callback",
         },
         async (accessToken, refreshToken, profile, done) => {
