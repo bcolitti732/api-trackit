@@ -19,11 +19,11 @@ const userSchema = new mongoose_1.Schema({
     },
     password: {
         type: String,
-        required: true
+        required: false
     },
     phone: {
         type: String,
-        required: true
+        required: false
     },
     available: {
         type: Boolean,
@@ -33,6 +33,10 @@ const userSchema = new mongoose_1.Schema({
     birthdate: {
         type: Date,
         required: true,
+    },
+    isProfileComplete: {
+        type: Boolean,
+        default: true,
     },
     packets: [{ type: mongoose_1.Schema.Types.ObjectId, ref: "Packet" }],
 });

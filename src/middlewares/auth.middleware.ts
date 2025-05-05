@@ -19,24 +19,24 @@ import { verifyToken } from "../utils/jwt.handle";
  * @param next - Función para pasar al siguiente middleware.
  */
 export function authMiddleware(req: Request, res: Response, next: NextFunction): void {
-    console.log("Middleware authMiddleware ejecutado"); // Agrega este log
 
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        console.log("Authorization header missing or invalid");
         res.status(401).json({ message: "Unauthorized" });
         return;
     }
 
     const token = authHeader.split(" ")[1];
+
     const payload = verifyToken(token, "access");
 
-    console.log("Payload del token:", payload); // Log para verificar el payload
-
     if (!payload) {
+        console.log("Token inválido o expirado");
         res.status(401).json({ message: "Invalid or expired token" });
         return;
     }
 
-    req.user = payload; // Adjunta el payload del token al objeto `req`
+    req.user = payload;
     next();
 }

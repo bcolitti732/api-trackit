@@ -55,11 +55,28 @@ class AuthService {
             if (!payload || payload.type !== "refresh") {
                 throw new Error("Invalid or expired refresh token");
             }
-            const user = yield user_1.UserModel.findById(payload.id);
+            const user = yield user_1.UserModel.findOne({ name: payload.name });
             if (!user) {
                 throw new Error("User not found");
             }
-            return (0, jwt_handle_1.generateToken)({ id: user._id }, "access");
+            return (0, jwt_handle_1.generateToken)({ name: user.name }, "access");
+        });
+    }
+    completeProfile(userName, phone, birthdate, password) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield user_1.UserModel.findOne({ name: userName });
+            if (!user) {
+                throw new Error("User not found");
+            }
+            user.phone = phone;
+            user.birthdate = new Date(birthdate);
+            user.password = yield (0, bcrypt_handle_1.encrypt)(password);
+            user.isProfileComplete = true;
+            const updatedUser = yield user.save();
+            const accessToken = (0, jwt_handle_1.generateToken)({ name: updatedUser.name }, "access");
+            const refreshToken = (0, jwt_handle_1.generateToken)({ name: updatedUser.name }, "refresh");
+            console.log("Perfil completado:", updatedUser);
+            return { user: updatedUser, accessToken, refreshToken };
         });
     }
 }

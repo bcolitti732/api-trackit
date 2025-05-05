@@ -9,6 +9,7 @@ export interface IUser {
   packets: ObjectId[];
   //role: "admin" | "user" | "dealer";
   birthdate: Date;
+  isProfileComplete: boolean;
 }
 
 const userSchema = new Schema<IUser>({
@@ -30,12 +31,12 @@ const userSchema = new Schema<IUser>({
 
   password: {
     type: String,
-    required: true
+    required: false
   },
 
   phone: {
     type: String,
-    required: true
+    required: false
   },
 
   available: {
@@ -47,6 +48,11 @@ const userSchema = new Schema<IUser>({
   birthdate: {
     type: Date,
     required: true,
+  },
+
+  isProfileComplete: {
+    type: Boolean,
+    default: true,
   },
   
   packets: [{ type: Schema.Types.ObjectId, ref: "Packet" }],
