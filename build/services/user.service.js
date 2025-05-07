@@ -8,12 +8,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserService = void 0;
 const user_1 = require("../models/user");
+const mongoose_1 = __importDefault(require("mongoose"));
 class UserService {
     postUser(user) {
         return __awaiter(this, void 0, void 0, function* () {
+            if (user.packets && Array.isArray(user.packets)) {
+                user.packets = user.packets.filter((id) => mongoose_1.default.Types.ObjectId.isValid(id.toString()));
+            }
             const newUser = new user_1.UserModel(user);
             return yield newUser.save();
         });

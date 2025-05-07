@@ -12,6 +12,7 @@ const packet_routes_1 = __importDefault(require("./routes/packet.routes"));
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 const passport_1 = __importDefault(require("passport"));
 const dotenv_1 = __importDefault(require("dotenv"));
+const delivery_routes_1 = __importDefault(require("./routes/delivery.routes"));
 dotenv_1.default.config();
 require("./utils/passport.google");
 const app = (0, express_1.default)();
@@ -23,6 +24,7 @@ app.use(express_1.default.json());
 app.use('/api/users', user_routes_1.default);
 app.use('/api/packets', packet_routes_1.default);
 app.use('/api/auth', auth_routes_1.default);
+app.use('/api/deliveries', delivery_routes_1.default);
 app.use(passport_1.default.initialize());
 app.listen(app.get('port'), () => {
     console.log(`Server running on port ${app.get('port')}`);

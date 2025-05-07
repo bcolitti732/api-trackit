@@ -19,7 +19,7 @@ const options = {
             schemas: {
                 Packet: {
                     type: 'object',
-                    required: ['name', 'description', 'status'],
+                    required: ['name', 'description', 'status', 'createdAt', 'deliveredAt', 'size', 'weight', 'origin'],
                     properties: {
                         name: {
                             type: 'string',
@@ -30,11 +30,35 @@ const options = {
                         status: {
                             type: 'string',
                         },
+                        createdAt: {
+                            type: 'string',
+                            format: 'date-time',
+                        },
+                        deliveredAt: {
+                            type: 'string',
+                            format: 'date-time',
+                        },
+                        size: {
+                            type: 'number',
+                        },
+                        weight: {
+                            type: 'number',
+                        },
+                        deliveryId: {
+                            type: 'string',
+                        },
+                        origin: {
+                            type: 'string',
+                        },
+                        destination: {
+                            type: 'string',
+                        },
+
                     },
                 },
                 User: {
                     type: 'object',
-                    required: ['name', 'email', 'password', 'phone', 'available', 'packets', 'birthdate'],
+                    required: ['name', 'email', 'password', 'phone', 'available', 'birthdate', 'role'],
                     properties: {
                         name: {
                             type: 'string',
@@ -55,11 +79,42 @@ const options = {
                             type: 'string',
                             format: 'date',
                         },
+                        role: {
+                            type: 'string',
+                            enum: ['admin', 'user', 'dealer'],
+                        },
                         packets: {
                             type: 'array',
                             items: {
                                 type: 'string',
                             },
+                        },
+                        deliveryProfileId: {
+                            type: 'string',
+                        },
+                    },
+                },
+                Delivery: {
+                    type: 'object',
+                    required: ['userId', 'assignedPacket', 'vehicle'],
+                    properties: {
+                        userId: {
+                            type: 'string',
+                        },
+                        assignedPacket: {
+                            type: 'array',
+                            items: {
+                                type: 'string',
+                            },
+                        },
+                        deliveredPackets: {
+                            type: 'array',
+                            items: {
+                                type: 'string',
+                            },
+                        },
+                        vehicle: {
+                            type: 'string',
                         },
                     },
                 },
@@ -76,7 +131,7 @@ const options = {
                 },
                 RegisterRequest: {
                     type: 'object',
-                    required: ['name', 'email', 'password', 'phone', 'available', 'packets', 'birthdate'],
+                    required: ['name', 'email', 'password', 'phone', 'available', 'packets', 'birthdate', 'role'],
                     properties: {
                         name: {
                             type: 'string',
@@ -103,6 +158,14 @@ const options = {
                                 type: 'string',
                             },
                         },
+                        role: {
+                            type: 'string',
+                            enum: ['admin', 'user', 'dealer'],
+                        },
+                        deliveryProfileId: {
+                            type: 'string',
+                        },
+
                     },
                 },
                 LoginRequest: {

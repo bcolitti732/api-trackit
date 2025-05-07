@@ -7,9 +7,10 @@ export interface IUser {
   phone: string;
   available: boolean;
   packets: ObjectId[];
-  //role: "admin" | "user" | "dealer";
+  role: "admin" | "user" | "dealer";
   birthdate: Date;
   isProfileComplete: boolean;
+  deliveryProfileId: ObjectId;
 }
 
 const userSchema = new Schema<IUser>({
@@ -56,6 +57,18 @@ const userSchema = new Schema<IUser>({
   },
   
   packets: [{ type: Schema.Types.ObjectId, ref: "Packet" }],
+
+  role: {
+    type: String,
+    enum: ["admin", "user", "dealer"],
+    default: "user",
+  },
+
+  deliveryProfileId: {
+    type: Schema.Types.ObjectId,
+    ref: "DeliveryProfile",
+    required: false
+  }
   
 });
 

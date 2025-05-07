@@ -7,6 +7,7 @@ import packetRoutes from './routes/packet.routes';
 import authRoutes from './routes/auth.routes';
 import passport from 'passport';
 import dotenv from 'dotenv';
+import deliveryRoutes from './routes/delivery.routes'; // Importar las rutas de delivery
 
 dotenv.config(); // Cargar variables de entorno desde el archivo .env
 
@@ -26,6 +27,8 @@ setupSwagger(app);
 app.use('/api/users', userRoutes);
 app.use('/api/packets', packetRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/deliveries', deliveryRoutes); // Usar las rutas de delivery
+
 
 app.use(passport.initialize());
 

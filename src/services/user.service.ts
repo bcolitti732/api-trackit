@@ -1,7 +1,15 @@
 import { IUser, UserModel } from '../models/user';
+import mongoose from 'mongoose';
 
 export class UserService {
     async postUser(user: Partial<IUser>): Promise<IUser> {
+        // Limpia el array de packets: elimina vacíos o IDs inválidos
+        if (user.packets && Array.isArray(user.packets)) {
+            user.packets = user.packets.filter(
+                (id) => mongoose.Types.ObjectId.isValid(id.toString())
+            );
+        }
+    
         const newUser = new UserModel(user);
         return await newUser.save();
     }

@@ -39,6 +39,16 @@ const userSchema = new mongoose_1.Schema({
         default: true,
     },
     packets: [{ type: mongoose_1.Schema.Types.ObjectId, ref: "Packet" }],
+    role: {
+        type: String,
+        enum: ["admin", "user", "dealer"],
+        default: "user",
+    },
+    deliveryProfileId: {
+        type: mongoose_1.Schema.Types.ObjectId,
+        ref: "DeliveryProfile",
+        required: false
+    }
 });
 exports.UserModel = (0, mongoose_1.model)("User", userSchema);
 //# sourceMappingURL=user.js.map
