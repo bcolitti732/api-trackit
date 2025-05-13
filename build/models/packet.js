@@ -13,6 +13,7 @@ const packetSchema = new mongoose_1.Schema({
     deliveryId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Delivery' },
     origin: { type: String },
     destination: { type: String },
+    location: { type: String }
 });
 exports.PacketModel = (0, mongoose_1.model)("Packet", packetSchema);
 //# sourceMappingURL=packet.js.map

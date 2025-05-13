@@ -12,6 +12,7 @@ export interface IPacket {
   deliveryId?: ObjectId;
   origin?: string;
   destination?: string;
+  location?: string;
 }
 
 const packetSchema = new Schema<IPacket>({
@@ -25,6 +26,7 @@ const packetSchema = new Schema<IPacket>({
   deliveryId: { type: Schema.Types.ObjectId, ref: 'Delivery' },
   origin: { type: String },
   destination: { type: String },
+  location: { type: String }
 });
 
 export const PacketModel = model("Packet", packetSchema);

@@ -21,6 +21,9 @@ class PacketService {
             if (!packet.deliveryId || !mongoose_1.default.Types.ObjectId.isValid(packet.deliveryId.toString())) {
                 delete packet.deliveryId;
             }
+            if (!packet.location && packet.origin) {
+                packet.location = packet.origin;
+            }
             const newPacket = new packet_1.PacketModel(packet);
             return yield newPacket.save();
         });
@@ -45,6 +48,9 @@ class PacketService {
     }
     updatePacketById(id, packet) {
         return __awaiter(this, void 0, void 0, function* () {
+            if (!packet.location && packet.origin) {
+                packet.location = packet.origin;
+            }
             return yield packet_1.PacketModel.findByIdAndUpdate(id, packet, { new: true });
         });
     }

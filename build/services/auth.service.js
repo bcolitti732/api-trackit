@@ -46,8 +46,8 @@ class AuthService {
             if (!isPasswordValid) {
                 throw new Error("Invalid credentials");
             }
-            const accessToken = (0, jwt_handle_1.generateToken)({ name: user.name }, "access");
-            const refreshToken = (0, jwt_handle_1.generateToken)({ name: user.name }, "refresh");
+            const accessToken = (0, jwt_handle_1.generateToken)({ name: user.name, role: user.role }, "access");
+            const refreshToken = (0, jwt_handle_1.generateToken)({ name: user.name, role: user.role }, "refresh");
             return { accessToken, refreshToken };
         });
     }
@@ -61,7 +61,7 @@ class AuthService {
             if (!user) {
                 throw new Error("User not found");
             }
-            return (0, jwt_handle_1.generateToken)({ name: user.name }, "access");
+            return (0, jwt_handle_1.generateToken)({ name: user.name, role: user.role }, "access");
         });
     }
     completeProfile(userName, phone, birthdate, password) {
@@ -75,8 +75,8 @@ class AuthService {
             user.password = yield (0, bcrypt_handle_1.encrypt)(password);
             user.isProfileComplete = true;
             const updatedUser = yield user.save();
-            const accessToken = (0, jwt_handle_1.generateToken)({ name: updatedUser.name }, "access");
-            const refreshToken = (0, jwt_handle_1.generateToken)({ name: updatedUser.name }, "refresh");
+            const accessToken = (0, jwt_handle_1.generateToken)({ name: updatedUser.name, role: user.role }, "access");
+            const refreshToken = (0, jwt_handle_1.generateToken)({ name: updatedUser.name, role: user.role }, "refresh");
             console.log("Perfil completado:", updatedUser);
             return { user: updatedUser, accessToken, refreshToken };
         });

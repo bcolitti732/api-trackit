@@ -27,7 +27,7 @@ router.put('/:id', updateUserById);
 router.delete('/:id', deleteUserById);
 router.put('/:id/deactivate', deactivateUserById);
 router.get('/:id/packets', authMiddleware, getUserPackets);
-router.post('/:name/packets', authMiddleware, addPacketToUser);
+router.post('/:name/packets', addPacketToUser);
 
 
 export default router;

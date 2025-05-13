@@ -33,8 +33,8 @@ passport.use(
                     await user.save();
                 }
 
-                const accessToken = generateToken({ name: user.name }, "access");
-                const refreshToken = generateToken({ name: user.name }, "refresh");
+                const accessToken = generateToken({ name: user.name, role:user.role }, "access");
+                const refreshToken = generateToken({ name: user.name, role:user.role }, "refresh");
 
                 done(null, { user, accessToken, refreshToken, isProfileComplete: user.isProfileComplete });
             } catch (error) {

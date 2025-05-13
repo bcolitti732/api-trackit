@@ -53,6 +53,9 @@ const options = {
                         destination: {
                             type: 'string',
                         },
+                        location: {
+                            type: 'string',
+                        },
 
                     },
                 },
@@ -81,7 +84,7 @@ const options = {
                         },
                         role: {
                             type: 'string',
-                            enum: ['admin', 'user', 'dealer'],
+                            enum: ['admin', 'user', 'delivery'],
                         },
                         packets: {
                             type: 'array',
@@ -160,7 +163,7 @@ const options = {
                         },
                         role: {
                             type: 'string',
-                            enum: ['admin', 'user', 'dealer'],
+                            enum: ['admin', 'user', 'delivery'],
                         },
                         deliveryProfileId: {
                             type: 'string',

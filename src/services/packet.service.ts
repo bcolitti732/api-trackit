@@ -3,14 +3,19 @@ import { IPacket, PacketModel } from '../models/packet';
 
 export class PacketService {
     async postPacket(packet: Partial<IPacket>): Promise<IPacket> {
-        // Validar que deliveryId sea un ObjectId válido o eliminarlo si es incorrecto
-        if (!packet.deliveryId || !mongoose.Types.ObjectId.isValid(packet.deliveryId.toString())) {
-            delete packet.deliveryId;
-        }
-
-        const newPacket = new PacketModel(packet);
-        return await newPacket.save();
+    if (!packet.deliveryId || !mongoose.Types.ObjectId.isValid(packet.deliveryId.toString())) {
+        delete packet.deliveryId;
     }
+
+    // Asignar location si no se proporciona pero origin sí
+    if (!packet.location && packet.origin) {
+        packet.location = packet.origin;
+    }
+
+    const newPacket = new PacketModel(packet);
+    return await newPacket.save();
+}
+
 
     async getAllPackets(page: number, limit: number): Promise<{ 
         totalPackets: number; 
@@ -37,8 +42,14 @@ export class PacketService {
     }
 
     async updatePacketById(id: string, packet: Partial<IPacket>): Promise<IPacket | null> {
-        return await PacketModel.findByIdAndUpdate(id, packet, { new: true });
+    // Asignar location = origin si no se proporciona explícitamente
+    if (!packet.location && packet.origin) {
+        packet.location = packet.origin;
     }
+
+    return await PacketModel.findByIdAndUpdate(id, packet, { new: true });
+}
+
 
     async deletePacketById(id: string): Promise<IPacket | null> {
         return await PacketModel.findByIdAndDelete(id);

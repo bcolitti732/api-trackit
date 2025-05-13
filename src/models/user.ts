@@ -60,13 +60,13 @@ const userSchema = new Schema<IUser>({
 
   role: {
     type: String,
-    enum: ["admin", "user", "dealer"],
+    enum: ["admin", "user", "delivery"],
     default: "user",
   },
 
   deliveryProfileId: {
     type: Schema.Types.ObjectId,
-    ref: "DeliveryProfile",
+    ref: "Delivery",
     required: false
   }
   

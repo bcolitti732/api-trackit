@@ -41,12 +41,12 @@ const userSchema = new mongoose_1.Schema({
     packets: [{ type: mongoose_1.Schema.Types.ObjectId, ref: "Packet" }],
     role: {
         type: String,
-        enum: ["admin", "user", "dealer"],
+        enum: ["admin", "user", "delivery"],
         default: "user",
     },
     deliveryProfileId: {
         type: mongoose_1.Schema.Types.ObjectId,
-        ref: "DeliveryProfile",
+        ref: "Delivery",
         required: false
     }
 });
