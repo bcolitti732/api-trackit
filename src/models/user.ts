@@ -1,5 +1,4 @@
 import {ObjectId, Schema, model} from 'mongoose';
-
 export interface IUser {
   name: string;
   email: string;
@@ -7,7 +6,7 @@ export interface IUser {
   phone: string;
   available: boolean;
   packets: ObjectId[];
-  role: "admin" | "user" | "dealer";
+  role: "admin" | "user" | "delivery";
   birthdate: Date;
   isProfileComplete: boolean;
   deliveryProfileId: ObjectId;
@@ -66,7 +65,7 @@ const userSchema = new Schema<IUser>({
 
   deliveryProfileId: {
     type: Schema.Types.ObjectId,
-    ref: "DeliveryProfile",
+    ref: "Delivery",
     required: false
   }
   

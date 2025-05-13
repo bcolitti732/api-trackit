@@ -46,7 +46,7 @@ const userSchema = new mongoose_1.Schema({
     },
     deliveryProfileId: {
         type: mongoose_1.Schema.Types.ObjectId,
-        ref: "DeliveryProfile",
+        ref: "Delivery",
         required: false
     }
 });

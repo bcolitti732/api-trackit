@@ -19,6 +19,6 @@ const deliverySchema = new Schema<IDelivery>({
         type: String,
         required: true,
     },
-    });
+});
 
 export const DeliveryModel = model("Delivery", deliverySchema);

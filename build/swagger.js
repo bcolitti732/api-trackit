@@ -59,6 +59,17 @@ const options = {
                         },
                     },
                 },
+                Message: {
+                    type: 'object',
+                    required: ['senderId', 'rxId', 'content'],
+                    properties: {
+                        senderId: { type: 'string', description: 'ID of the sender' },
+                        rxId: { type: 'string', description: 'ID of the receiver' },
+                        content: { type: 'string', description: 'Content of the message' },
+                        created: { type: 'string', format: 'date-time', description: 'Timestamp when the message was created' },
+                        acknowledged: { type: 'boolean', description: 'Whether the message has been read' }
+                    },
+                },
                 User: {
                     type: 'object',
                     required: ['name', 'email', 'password', 'phone', 'available', 'birthdate', 'role'],

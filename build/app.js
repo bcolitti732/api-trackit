@@ -1,4 +1,37 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -10,11 +43,14 @@ const cors_1 = __importDefault(require("./middlewares/cors"));
 const user_routes_1 = __importDefault(require("./routes/user.routes"));
 const packet_routes_1 = __importDefault(require("./routes/packet.routes"));
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
+const message_routes_1 = __importDefault(require("./routes/message.routes"));
 const passport_1 = __importDefault(require("passport"));
 const dotenv_1 = __importDefault(require("dotenv"));
-const delivery_routes_1 = __importDefault(require("./routes/delivery.routes"));
+const http = __importStar(require("node:http"));
+const socket_io_1 = require("socket.io");
 dotenv_1.default.config();
 require("./utils/passport.google");
+const jwt_handle_1 = require("./utils/jwt.handle");
 const app = (0, express_1.default)();
 app.set('port', process.env.PORT || 4000);
 app.use(cors_1.default);
@@ -24,11 +60,57 @@ app.use(express_1.default.json());
 app.use('/api/users', user_routes_1.default);
 app.use('/api/packets', packet_routes_1.default);
 app.use('/api/auth', auth_routes_1.default);
-app.use('/api/deliveries', delivery_routes_1.default);
+app.use('/api/messages', message_routes_1.default);
 app.use(passport_1.default.initialize());
 app.listen(app.get('port'), () => {
     console.log(`Server running on port ${app.get('port')}`);
     console.log(`Swagger disponible a http://localhost:${app.get('port')}/api-docs`);
+});
+const CHAT_PORT = process.env.CHAT_PORT || 3001;
+const chatServer = http.createServer();
+const chatIO = new socket_io_1.Server(chatServer, {
+    cors: {
+        origin: '*',
+        methods: ['GET', 'POST'],
+        credentials: true
+    }
+});
+chatIO.on('connection', (socket) => {
+    console.log(`Usuario conectado al chat: ${socket.id}`);
+    socket.use(([event, ...args], next) => {
+        const token = socket.handshake.auth.token;
+        if (!token)
+            return next(new Error('unauthorized'));
+        try {
+            const payload = (0, jwt_handle_1.verifyToken)(token, 'access');
+            return next();
+        }
+        catch (err) {
+            return next(new Error('unauthorized'));
+        }
+    });
+    socket.on('error', (err) => {
+        if (err && err.message == 'unauthorized') {
+            console.debug('unauthorized user');
+            socket.emit('status', { status: 'unauthorized' });
+            socket.disconnect();
+        }
+    });
+    socket.on('join_room', (roomId) => {
+        socket.join(roomId);
+        console.log(`Usuario con ID: ${socket.id} se unió a la sala: ${roomId}`);
+        console.log(`Usuario: ${socket.data.user}`);
+    });
+    socket.on('send_message', (data) => {
+        socket.to(data.room).emit('receive_message', data);
+        console.log(`Mensaje enviado en sala ${data.room} por ${data.author}: ${data.message}`);
+    });
+    socket.on('disconnect', () => {
+        console.log(`Usuario desconectado del chat: ${socket.id}`);
+    });
+});
+chatServer.listen(CHAT_PORT, () => {
+    console.log(`Servidor de chat escuchando en http://localhost:${CHAT_PORT}`);
 });
 exports.default = app;
 //# sourceMappingURL=app.js.map
