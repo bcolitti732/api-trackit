@@ -64,7 +64,8 @@ const options = {
                         rxId: { type: 'string', description: 'ID of the receiver' },
                         content: { type: 'string', description: 'Content of the message' },
                         created: { type: 'string', format: 'date-time', description: 'Timestamp when the message was created' },
-                        acknowledged: { type: 'boolean', description: 'Whether the message has been read' }
+                        acknowledged: { type: 'boolean', description: 'Whether the message has been read' },
+                        roomId: { type: 'string', description: 'ID of the chat room' },
                     },                    
                     },
                 User: {

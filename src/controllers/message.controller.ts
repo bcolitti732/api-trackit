@@ -112,7 +112,7 @@ export async function getMessagesBetweenUsers(req: Request, res: Response): Prom
 
 /**
  * @swagger
- * /api/messages/{messageId}/acknowledge:
+ * /api/messages/{messageId}:
  *   patch:
  *     summary: Mark a message as acknowledged
  *     tags: [Messages]
@@ -142,3 +142,83 @@ export async function acknowledgeMessage(req: Request, res: Response): Promise<v
         res.status(400).json({ message: "Error acknowledging message", error });
     }
 }
+
+/**
+ * @swagger
+ * /api/messages/contacts/{userId}:
+ *   get:
+ *     summary: Get all contacts a user has interacted with
+ *     tags: [Messages]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The user's ID
+ *     responses:
+ *       200:
+ *         description: List of contacts
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'          
+ *       400:
+ *         description: Error retrieving contacts
+ *       500:
+ *         description: Internal server error
+ */
+export async function getUserContacts(req: Request, res: Response): Promise<void> {
+    try {
+        const { userId } = req.params;        
+        const contacts = await messageService.getUserContacts(userId);
+        res.status(200).json(contacts);
+    } catch (error) {
+        if (error instanceof Error && error.message.includes("Endpoint not found")) {
+            res.status(500).json({ message: "Internal server error", error });
+        } else {
+            res.status(400).json({ message: "Error retrieving contacts", error });
+        }
+    }
+}
+
+
+/**
+ * @swagger
+ * /api/messages/start:
+ *   post:
+ *     summary: Start a conversation between two users
+ *     tags: [Messages]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               user1Id:
+ *                 type: string
+ *                 description: The ID of the first user
+ *               user2Id:
+ *                 type: string
+ *                 description: The ID of the second user
+ *     responses:
+ *       201:
+ *         description: Conversation started successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Message'
+ *       400:
+ *         description: Error starting conversation
+ */
+export async function startConversation(req: Request, res: Response): Promise<void> {
+    try {
+        const { user1Id, user2Id } = req.body;
+        const conversation = await messageService.startConversation(user1Id, user2Id);
+        res.status(201).json(conversation);
+    } catch (error) {
+        res.status(400).json({ message: "Error starting conversation", error });
+    }
+}
+

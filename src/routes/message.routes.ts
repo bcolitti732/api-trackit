@@ -1,11 +1,13 @@
 import { Router } from 'express';
-import { postMessage, getMessagesBetweenUsers, getMessagesByUser, acknowledgeMessage} from '../controllers/message.controller';
+import { postMessage, getMessagesBetweenUsers, getMessagesByUser, acknowledgeMessage, getUserContacts, startConversation} from '../controllers/message.controller';
 
 const router = Router();
 
 router.post('/', postMessage);
-router.get('/:userId', getMessagesByUser);
+router.get('/contacts/:userId', getUserContacts);
 router.get('/:user1Id/:user2Id', getMessagesBetweenUsers);
+router.get('/:userId', getMessagesByUser);
 router.put('/:id', acknowledgeMessage);
+router.post('/start', startConversation);
 
 export default router;

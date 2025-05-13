@@ -3,9 +3,10 @@ import {ObjectId, Schema, model} from 'mongoose';
 export interface IMessage {
   senderId: ObjectId;
   rxId: ObjectId;
-  content: string;
+  content?: string;
   created: Date;
   acknowledged: boolean;
+  roomId: string;
 }
 
 const messageSchema = new Schema<IMessage>({
@@ -22,7 +23,7 @@ const messageSchema = new Schema<IMessage>({
   },
   content: {
     type: String, 
-    required: true
+    required: false
   },
 
   created: {
@@ -33,6 +34,10 @@ const messageSchema = new Schema<IMessage>({
     type: Boolean,
     required: true,
     default: false
+  },
+  roomId: {
+    type: String,
+    required: true,
   }
 });
 

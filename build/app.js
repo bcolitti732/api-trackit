@@ -32,6 +32,15 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -48,6 +57,7 @@ const passport_1 = __importDefault(require("passport"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const http = __importStar(require("node:http"));
 const socket_io_1 = require("socket.io");
+const message_1 = require("./models/message");
 dotenv_1.default.config();
 require("./utils/passport.google");
 const jwt_handle_1 = require("./utils/jwt.handle");
@@ -75,6 +85,7 @@ const chatIO = new socket_io_1.Server(chatServer, {
         credentials: true
     }
 });
+const userSockets = new Map();
 chatIO.on('connection', (socket) => {
     console.log(`Usuario conectado al chat: ${socket.id}`);
     socket.use(([event, ...args], next) => {
@@ -83,6 +94,14 @@ chatIO.on('connection', (socket) => {
             return next(new Error('unauthorized'));
         try {
             const payload = (0, jwt_handle_1.verifyToken)(token, 'access');
+            if (payload && payload.id) {
+                socket.data.userId = payload.id;
+                socket.data.userName = payload.name;
+            }
+            else {
+                return next(new Error('unauthorized'));
+            }
+            userSockets.set(socket.data.userId, socket.id);
             return next();
         }
         catch (err) {
@@ -101,13 +120,25 @@ chatIO.on('connection', (socket) => {
         console.log(`Usuario con ID: ${socket.id} se unió a la sala: ${roomId}`);
         console.log(`Usuario: ${socket.data.user}`);
     });
-    socket.on('send_message', (data) => {
-        socket.to(data.room).emit('receive_message', data);
-        console.log(`Mensaje enviado en sala ${data.room} por ${data.author}: ${data.message}`);
-    });
-    socket.on('disconnect', () => {
-        console.log(`Usuario desconectado del chat: ${socket.id}`);
-    });
+    socket.on('send_message', (data) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const newMessage = new message_1.MessageModel({
+                senderId: data.senderId,
+                rxId: data.rxId,
+                roomId: data.roomId,
+                content: data.content,
+                created: new Date(),
+                acknowledged: false
+            });
+            yield newMessage.save();
+            socket.to(data.roomId).emit('receive_message', newMessage);
+            console.log(`Mensaje enviado en sala ${data.roomId} por ${data.senderId}: ${data.content}`);
+        }
+        catch (error) {
+            console.error('Error al guardar el mensaje:', error);
+            socket.emit('error', { message: 'Error al guardar el mensaje' });
+        }
+    }));
 });
 chatServer.listen(CHAT_PORT, () => {
     console.log(`Servidor de chat escuchando en http://localhost:${CHAT_PORT}`);

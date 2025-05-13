@@ -39,8 +39,8 @@ export class AuthService {
       throw new Error("Invalid credentials");
     }
 
-    const accessToken = generateToken({ name: user.name }, "access");
-    const refreshToken = generateToken({ name: user.name }, "refresh");
+    const accessToken = generateToken({name: user.name, id: user._id.toString(),type: "access"}, "access");
+    const refreshToken = generateToken({ name: user.name, id: user._id.toString(), type: "refresh"}, "refresh");
 
     return { accessToken, refreshToken };
   }
@@ -56,7 +56,7 @@ export class AuthService {
       throw new Error("User not found");
     }
 
-    return generateToken({ name: user.name }, "access");
+    return generateToken({name: user.name, id: user._id.toString(),type: "access"}, "access");
   }
 
   async completeProfile(userName: string, phone: string, birthdate: string, password: string): Promise<{ user: IUser, accessToken: string, refreshToken: string }> {
@@ -74,8 +74,9 @@ export class AuthService {
     const updatedUser = await user.save();
   
     // Genera los nuevos tokens utilizando las funciones existentes
-    const accessToken = generateToken({name: updatedUser.name}, "access");  // Función que ya tienes
-    const refreshToken = generateToken({name: updatedUser.name}, "refresh"); // Función que ya tienes
+    
+    const accessToken = generateToken({name: user.name, id: user._id.toString(),type: "access"}, "access");
+    const refreshToken = generateToken({ name: user.name, id: user._id.toString(), type: "refresh"}, "refresh");
     console.log("Perfil completado:", updatedUser);
   
     return { user: updatedUser, accessToken, refreshToken };
