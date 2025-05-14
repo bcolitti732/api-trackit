@@ -2,6 +2,7 @@ import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import { Application } from 'express';
 
+const serverUrl = process.env.SWAGGER_SERVER_URL || 'http://localhost:4000';
 const options = {
     definition: {
         openapi: '3.0.0',
@@ -12,7 +13,7 @@ const options = {
         },
         servers: [
             {
-                url: 'http://localhost:4000',
+                url: serverUrl,
             },
         ],
         components: {
@@ -186,7 +187,7 @@ const options = {
             },
         },
     },
-    apis: ['./src/routes/*.ts', './src/controllers/*.ts'], // Swagger generará la documentación desde los comentarios
+    apis: ['./build/routes/*.js', './build/controllers/*.js'], // Swagger generará la documentación desde los comentarios
 };
 const swaggerSpec = swaggerJSDoc(options);
 

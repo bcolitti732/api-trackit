@@ -188,7 +188,7 @@ const options = {
             },
         },
     },
-    apis: ['./src/routes/*.ts', './src/controllers/*.ts'],
+    apis: ['./build/routes/*.js', './build/controllers/*.js'],
 };
 const swaggerSpec = (0, swagger_jsdoc_1.default)(options);
 function setupSwagger(app) {
