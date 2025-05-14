@@ -1,8 +1,10 @@
 import { Request, Response } from "express";
 import { AuthService } from "../services/auth.service";
 import { verifyToken } from "../utils/jwt.handle";
+import { OAuth2Client } from "google-auth-library";
 
 const authService = new AuthService();
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 export async function register(req: Request, res: Response): Promise<void> {
   try {
@@ -53,25 +55,67 @@ export async function refreshToken(req: Request, res: Response): Promise<void> {
   }
 }
 
-/**
- * Endpoint para completar datos del perfil de un usuario OAuth (usando JWT basado en `name`)
- */
 export async function completeProfile(req: Request, res: Response): Promise<void> {
-    try {
-      const payload = (req as any).user; // Obtenido del middleware JWT
-      const { phone, birthdate, password } = req.body;
-  
-      // Llamamos al servicio para completar el perfil y obtener los tokens
-      const { user, accessToken, refreshToken } = await authService.completeProfile(payload.name, phone, birthdate, password);
-  
-      // Devolver la respuesta con los nuevos tokens y los datos del usuario actualizado
-      res.status(200).json({
-        message: "Perfil completado",
-        user: user,
-        accessToken: accessToken,
-        refreshToken: refreshToken
-      });
-    } catch (error) {
-      res.status(400).json({ message: (error as Error).message });
-    }
+  try {
+    const payload = (req as any).user;
+    const { phone, birthdate, password } = req.body;
+
+    const { user, accessToken, refreshToken } = await authService.completeProfile(
+      payload.name,
+      phone,
+      birthdate,
+      password
+    );
+
+    res.status(200).json({
+      message: "Perfil completado",
+      user,
+      accessToken,
+      refreshToken
+    });
+  } catch (error) {
+    res.status(400).json({ message: (error as Error).message });
   }
+}
+
+/**
+ * Login con Google desde aplicación móvil usando idToken
+ */
+export async function loginWithGoogleMobile(req: Request, res: Response): Promise<void> {
+  try {
+    const { idToken } = req.body;
+
+    if (!idToken) {
+      res.status(400).json({ message: "idToken is required" });
+      return;
+    }
+    console.log("idToken:", idToken);
+    // Verificar el idToken con Google
+    const ticket = await client.verifyIdToken({
+      idToken,
+      audience: process.env.GOOGLE_CLIENT_ID
+    });
+
+    const payload = ticket.getPayload();
+    const email = payload?.email;
+    const name = payload?.name;
+
+    if (!email) {
+      res.status(400).json({ message: "Google token does not contain email" });
+      return;
+    }
+
+    // Delegar la lógica al servicio
+    const { user, accessToken, refreshToken } = await authService.loginOrRegisterGoogleUser(email, name);
+    console.log("Google login or register:", user);
+
+    res.status(200).json({
+      user,
+      accessToken,
+      refreshToken
+    });
+  } catch (error) {
+    console.error("Google login error:", error);
+    res.status(401).json({ message: "Invalid Google token" });
+  }
+}

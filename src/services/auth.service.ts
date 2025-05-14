@@ -78,4 +78,28 @@ export class AuthService {
   
     return { user: updatedUser, accessToken, refreshToken };
   }
+
+    /**
+   * Login o registro automático con Google
+   */
+  async loginOrRegisterGoogleUser(email: string, name?: string): Promise<{ user: IUser, accessToken: string, refreshToken: string }> {
+    let user = await UserModel.findOne({ email });
+
+    // Si el usuario no existe, lo registramos
+    if (!user) {
+      user = new UserModel({
+        email,
+        name: name || email.split("@")[0], // Nombre por defecto si no lo proporciona Google
+        isProfileComplete: false, // Perfil incompleto hasta que agregue más datos
+      });
+
+      await user.save();
+    }
+
+    const accessToken = generateToken({ name: user.name }, "access");
+    const refreshToken = generateToken({ name: user.name }, "refresh");
+
+    return { user, accessToken, refreshToken };
+  }
+
 }

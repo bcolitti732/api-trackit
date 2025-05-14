@@ -1,6 +1,6 @@
 import { Router } from "express";
 import passport from "passport";
-import { completeProfile, login, refreshToken, register, verifyTokenEndpoint } from "../controllers/auth.controller";
+import { completeProfile, login, refreshToken, register, verifyTokenEndpoint, loginWithGoogleMobile } from "../controllers/auth.controller";
 import { authMiddleware } from "../middlewares/auth.middleware";
 
 const router = Router();
@@ -47,7 +47,11 @@ router.get('/google/callback', passport.authenticate('google', { session: false 
     res.redirect(redirectUrl.toString());
 });
 
-router.put("/complete-profile", authMiddleware, completeProfile); 
+router.post('/google/mobile', loginWithGoogleMobile);
+
+router.put("/complete-profile", authMiddleware, completeProfile);
+
+
 
 
 export default router;
