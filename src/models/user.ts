@@ -1,5 +1,4 @@
 import {ObjectId, Schema, model} from 'mongoose';
-
 export interface IUser {
   name: string;
   email: string;
@@ -7,7 +6,7 @@ export interface IUser {
   phone: string;
   available: boolean;
   packets: ObjectId[];
-  role: "admin" | "user" | "dealer";
+  role: "admin" | "user" | "delivery";
   birthdate: Date;
   isProfileComplete: boolean;
   deliveryProfileId: ObjectId;
@@ -72,5 +71,13 @@ const userSchema = new Schema<IUser>({
   
 });
 
+userSchema.set("toJSON", {
+  transform: (doc, ret) => {
+    ret.id = ret._id;
+    delete ret._id;
+    delete ret.__v; 
+    return ret;
+  },
+});
 
 export const UserModel = model("User", userSchema);

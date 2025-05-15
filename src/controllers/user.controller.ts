@@ -165,21 +165,31 @@ export async function getUserByName(req: Request, res: Response): Promise<void> 
 export async function updateUserById(req: Request, res: Response): Promise<void> {
     try {
         const id = req.params.id;
-        const user = req.body as IUser;
-        const updatedUser = await userService.updateUserById(id, user);
+        const userUpdates = req.body as Partial<IUser>;
+
+        // Obtener el usuario actual de la base de datos
+        const existingUser = await userService.getUserById(id);
+        if (!existingUser) {
+            res.status(404).json({ message: "User not found" });
+            return;
+        }
+
+        // Conservar los valores existentes si los campos están vacíos o no se envían
+        const updatedUserData: Partial<IUser> = {
+            name: userUpdates.name || existingUser.name,
+            email: userUpdates.email || existingUser.email,
+            password: userUpdates.password || existingUser.password,
+            phone: userUpdates.phone || existingUser.phone,
+            available: userUpdates.available !== undefined ? userUpdates.available : existingUser.available,
+            birthdate: userUpdates.birthdate || existingUser.birthdate,
+            role: userUpdates.role || existingUser.role,
+        };
+
+        // Actualizar el usuario con los nuevos datos
+        const updatedUser = await userService.updateUserById(id, updatedUserData);
         res.status(200).json(updatedUser);
     } catch (error) {
         res.status(400).json({ message: "Error updating user", error });
-    }
-}
-
-export async function deleteUserById(req: Request, res: Response): Promise<void> {
-    try {
-        const id = req.params.id;
-        const deletedUser = await userService.deleteUserById(id);
-        res.status(200).json(deletedUser);
-    } catch (error) {
-        res.status(400).json({ message: "Error deleting user", error });   
     }
 }
 
@@ -318,4 +328,18 @@ export async function addPacketToUser(req: Request, res: Response): Promise<void
 }
 
 
+export async function deleteUserById(req: Request, res: Response): Promise<void> {
+    try {
+        const id = req.params.id;
+        const deletedUser = await userService.deleteUserById(id);
 
+        if (!deletedUser) {
+            res.status(404).json({ message: "User not found" });
+            return;
+        }
+
+        res.status(200).json({ message: "User deleted successfully" });
+    } catch (error) {
+        res.status(500).json({ message: "Error deleting user", error });
+    }
+}

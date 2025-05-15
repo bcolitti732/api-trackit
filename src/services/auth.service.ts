@@ -28,21 +28,32 @@ export class AuthService {
     return await newUser.save();
   }
 
-  async login(email: string, password: string): Promise<{ accessToken: string; refreshToken: string }> {
-    const user = await UserModel.findOne({ email });
+  async login(email: string, password: string): Promise<{ accessToken: string; refreshToken: string; user: any }> {
+    const user = await UserModel.findOne({ email }).populate('packets'); // Asegúrate de que "packets" es un campo relacionado
     if (!user) {
-      throw new Error("User not found");
+        throw new Error("User not found");
     }
 
     const isPasswordValid = await verified(password, user.password);
     if (!isPasswordValid) {
-      throw new Error("Invalid credentials");
+        throw new Error("Invalid credentials");
     }
 
-    const accessToken = generateToken({ name: user.name , role: user.role}, "access");
-    const refreshToken = generateToken({ name: user.name, role: user.role }, "refresh");
+    const accessToken = generateToken({ name: user.name , role: user.role,id: user._id.toString(),type: "access" }, "access");
+    const refreshToken = generateToken({ name: user.name, role: user.role, id: user._id.toString(),type: "refresh" }, "refresh");
 
-    return { accessToken, refreshToken };
+    return {
+        accessToken,
+        refreshToken,
+        user: {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            birthdate: user.birthdate,
+            packets: user.packets, 
+        },
+    };
   }
 
   async refreshToken(refreshToken: string): Promise<string> {
@@ -56,7 +67,7 @@ export class AuthService {
       throw new Error("User not found");
     }
 
-    return generateToken({ name: user.name , role: user.role}, "access");
+    return generateToken({ name: user.name , role: user.role, id: user._id.toString(),type: "access"}, "access");
   }
 
   async completeProfile(userName: string, phone: string, birthdate: string, password: string): Promise<{ user: IUser, accessToken: string, refreshToken: string }> {
@@ -74,8 +85,8 @@ export class AuthService {
     const updatedUser = await user.save();
   
     // Genera los nuevos tokens utilizando las funciones existentes
-    const accessToken = generateToken({name: updatedUser.name, role: user.role}, "access");  // Función que ya tienes
-    const refreshToken = generateToken({name: updatedUser.name, role: user.role}, "refresh"); // Función que ya tienes
+    const accessToken = generateToken({ name: user.name , role: user.role,id: user._id.toString(),type: "access" }, "access");
+    const refreshToken = generateToken({ name: user.name, role: user.role, id: user._id.toString(),type: "refresh" }, "refresh");
     console.log("Perfil completado:", updatedUser);
   
     return { user: updatedUser, accessToken, refreshToken };

@@ -38,7 +38,7 @@ class AuthService {
     }
     login(email, password) {
         return __awaiter(this, void 0, void 0, function* () {
-            const user = yield user_1.UserModel.findOne({ email });
+            const user = yield user_1.UserModel.findOne({ email }).populate('packets');
             if (!user) {
                 throw new Error("User not found");
             }
@@ -46,9 +46,20 @@ class AuthService {
             if (!isPasswordValid) {
                 throw new Error("Invalid credentials");
             }
-            const accessToken = (0, jwt_handle_1.generateToken)({ name: user.name, role: user.role }, "access");
-            const refreshToken = (0, jwt_handle_1.generateToken)({ name: user.name, role: user.role }, "refresh");
-            return { accessToken, refreshToken };
+            const accessToken = (0, jwt_handle_1.generateToken)({ name: user.name, role: user.role, id: user._id.toString(), type: "access" }, "access");
+            const refreshToken = (0, jwt_handle_1.generateToken)({ name: user.name, role: user.role, id: user._id.toString(), type: "refresh" }, "refresh");
+            return {
+                accessToken,
+                refreshToken,
+                user: {
+                    id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    phone: user.phone,
+                    birthdate: user.birthdate,
+                    packets: user.packets,
+                },
+            };
         });
     }
     refreshToken(refreshToken) {
@@ -61,7 +72,7 @@ class AuthService {
             if (!user) {
                 throw new Error("User not found");
             }
-            return (0, jwt_handle_1.generateToken)({ name: user.name, role: user.role }, "access");
+            return (0, jwt_handle_1.generateToken)({ name: user.name, role: user.role, id: user._id.toString(), type: "access" }, "access");
         });
     }
     completeProfile(userName, phone, birthdate, password) {
@@ -75,8 +86,8 @@ class AuthService {
             user.password = yield (0, bcrypt_handle_1.encrypt)(password);
             user.isProfileComplete = true;
             const updatedUser = yield user.save();
-            const accessToken = (0, jwt_handle_1.generateToken)({ name: updatedUser.name, role: user.role }, "access");
-            const refreshToken = (0, jwt_handle_1.generateToken)({ name: updatedUser.name, role: user.role }, "refresh");
+            const accessToken = (0, jwt_handle_1.generateToken)({ name: user.name, role: user.role, id: user._id.toString(), type: "access" }, "access");
+            const refreshToken = (0, jwt_handle_1.generateToken)({ name: user.name, role: user.role, id: user._id.toString(), type: "refresh" }, "refresh");
             console.log("Perfil completado:", updatedUser);
             return { user: updatedUser, accessToken, refreshToken };
         });

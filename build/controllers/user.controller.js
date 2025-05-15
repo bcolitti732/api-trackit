@@ -14,10 +14,10 @@ exports.getAllUsers = getAllUsers;
 exports.getUserById = getUserById;
 exports.getUserByName = getUserByName;
 exports.updateUserById = updateUserById;
-exports.deleteUserById = deleteUserById;
 exports.deactivateUserById = deactivateUserById;
 exports.getUserPackets = getUserPackets;
 exports.addPacketToUser = addPacketToUser;
+exports.deleteUserById = deleteUserById;
 const user_service_1 = require("../services/user.service");
 const userService = new user_service_1.UserService();
 function postUser(req, res) {
@@ -73,24 +73,26 @@ function updateUserById(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const id = req.params.id;
-            const user = req.body;
-            const updatedUser = yield userService.updateUserById(id, user);
+            const userUpdates = req.body;
+            const existingUser = yield userService.getUserById(id);
+            if (!existingUser) {
+                res.status(404).json({ message: "User not found" });
+                return;
+            }
+            const updatedUserData = {
+                name: userUpdates.name || existingUser.name,
+                email: userUpdates.email || existingUser.email,
+                password: userUpdates.password || existingUser.password,
+                phone: userUpdates.phone || existingUser.phone,
+                available: userUpdates.available !== undefined ? userUpdates.available : existingUser.available,
+                birthdate: userUpdates.birthdate || existingUser.birthdate,
+                role: userUpdates.role || existingUser.role,
+            };
+            const updatedUser = yield userService.updateUserById(id, updatedUserData);
             res.status(200).json(updatedUser);
         }
         catch (error) {
             res.status(400).json({ message: "Error updating user", error });
-        }
-    });
-}
-function deleteUserById(req, res) {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            const id = req.params.id;
-            const deletedUser = yield userService.deleteUserById(id);
-            res.status(200).json(deletedUser);
-        }
-        catch (error) {
-            res.status(400).json({ message: "Error deleting user", error });
         }
     });
 }
@@ -140,6 +142,22 @@ function addPacketToUser(req, res) {
         }
         catch (error) {
             res.status(500).json({ message: "Error adding packet to user", error });
+        }
+    });
+}
+function deleteUserById(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const id = req.params.id;
+            const deletedUser = yield userService.deleteUserById(id);
+            if (!deletedUser) {
+                res.status(404).json({ message: "User not found" });
+                return;
+            }
+            res.status(200).json({ message: "User deleted successfully" });
+        }
+        catch (error) {
+            res.status(500).json({ message: "Error deleting user", error });
         }
     });
 }

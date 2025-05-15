@@ -50,5 +50,13 @@ const userSchema = new mongoose_1.Schema({
         required: false
     }
 });
+userSchema.set("toJSON", {
+    transform: (doc, ret) => {
+        ret.id = ret._id;
+        delete ret._id;
+        delete ret.__v;
+        return ret;
+    },
+});
 exports.UserModel = (0, mongoose_1.model)("User", userSchema);
 //# sourceMappingURL=user.js.map

@@ -33,9 +33,8 @@ passport.use(
                     await user.save();
                 }
 
-                const accessToken = generateToken({ name: user.name, role:user.role }, "access");
-                const refreshToken = generateToken({ name: user.name, role:user.role }, "refresh");
-
+                 const accessToken = generateToken({ name: user.name , role: user.role,id: user._id.toString(),type: "access" }, "access");
+                 const refreshToken = generateToken({ name: user.name, role: user.role, id: user._id.toString(),type: "refresh" }, "refresh");
                 done(null, { user, accessToken, refreshToken, isProfileComplete: user.isProfileComplete });
             } catch (error) {
                 console.error("Error en la estrategia de Google:", error);
