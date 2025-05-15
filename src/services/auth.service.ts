@@ -26,7 +26,7 @@ export class AuthService {
     return await newUser.save();
   }
 
-  async login(email: string, password: string): Promise<{ accessToken: string; refreshToken: string }> {
+  async login(email: string, password: string): Promise<{ accessToken: string; refreshToken: string; isProfileComplete: boolean }> {
     const user = await UserModel.findOne({ email });
     if (!user) {
       throw new Error("User not found");
@@ -39,8 +39,9 @@ export class AuthService {
 
     const accessToken = generateToken({ name: user.name }, "access");
     const refreshToken = generateToken({ name: user.name }, "refresh");
+    const isProfileComplete = user.isProfileComplete;
 
-    return { accessToken, refreshToken };
+    return { accessToken, refreshToken, isProfileComplete };
   }
 
   async refreshToken(refreshToken: string): Promise<string> {

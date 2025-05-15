@@ -89,11 +89,11 @@ export async function loginWithGoogleMobile(req: Request, res: Response): Promis
       res.status(400).json({ message: "idToken is required" });
       return;
     }
-    console.log("idToken:", idToken);
+
     // Verificar el idToken con Google
     const ticket = await client.verifyIdToken({
       idToken,
-      audience: process.env.GOOGLE_CLIENT_ID
+      audience: process.env.GOOGLE_CLIENT_ID,
     });
 
     const payload = ticket.getPayload();
@@ -107,12 +107,19 @@ export async function loginWithGoogleMobile(req: Request, res: Response): Promis
 
     // Delegar la lógica al servicio
     const { user, accessToken, refreshToken } = await authService.loginOrRegisterGoogleUser(email, name);
-    console.log("Google login or register:", user);
+
+    // Si el usuario no tiene `birthdate`, marca el perfil como incompleto
+    if (!user.birthdate) {
+      user.isProfileComplete = false;
+    }
 
     res.status(200).json({
-      user,
+      user: {
+        ...user,
+        isProfileComplete: user.isProfileComplete,
+      },
       accessToken,
-      refreshToken
+      refreshToken,
     });
   } catch (error) {
     console.error("Google login error:", error);

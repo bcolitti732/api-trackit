@@ -47,7 +47,7 @@ const userSchema = new Schema<IUser>({
 
   birthdate: {
     type: Date,
-    required: true,
+    required: false,
   },
 
   isProfileComplete: {
