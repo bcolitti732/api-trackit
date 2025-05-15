@@ -1,4 +1,6 @@
 import { connect, connection } from 'mongoose'
+import dotenv from 'dotenv';
+dotenv.config();
 
 const mongoURI = process.env.MONGO_URI || 'mongodb://mongodb:27017/trackit'; 
 

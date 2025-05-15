@@ -8,10 +8,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.startConnection = startConnection;
 const mongoose_1 = require("mongoose");
-const mongoURI = 'mongodb://localhost:27017/trackit-DB';
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
+const mongoURI = process.env.MONGO_URI || 'mongodb://mongodb:27017/trackit';
 function startConnection() {
     return __awaiter(this, void 0, void 0, function* () {
         try {

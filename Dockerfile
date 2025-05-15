@@ -6,6 +6,7 @@ WORKDIR /usr/src/app
 # Copia los archivos de dependencias
 COPY package*.json ./
 
+
 # Instala dependencias
 RUN npm install
 
@@ -25,7 +26,7 @@ COPY --from=build /usr/src/app/package*.json ./
 COPY --from=build /usr/src/app/build ./build
 
 # Copia el archivo .env si lo necesitas dentro del contenedor
-# COPY .env .env
+COPY .env .env
 
 # Instala solo dependencias de producción
 RUN npm install --omit=dev

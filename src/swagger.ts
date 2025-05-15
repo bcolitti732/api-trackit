@@ -2,7 +2,11 @@ import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import { Application } from 'express';
 
-const serverUrl = process.env.SWAGGER_SERVER_URL || 'http://localhost:4000';
+import dotenv from 'dotenv';
+dotenv.config();
+
+const port = process.env.PORT || 4000;
+const serverUrl = `http://localhost:${port}`;
 const options = {
     definition: {
         openapi: '3.0.0',
@@ -187,7 +191,7 @@ const options = {
             },
         },
     },
-    apis: ['./build/routes/*.js', './build/controllers/*.js'], // Swagger generará la documentación desde los comentarios
+    apis: ['./build/routes/*.ts', './build/controllers/*.ts'], // Swagger generará la documentación desde los comentarios
 };
 const swaggerSpec = swaggerJSDoc(options);
 

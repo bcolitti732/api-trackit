@@ -6,6 +6,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.setupSwagger = setupSwagger;
 const swagger_jsdoc_1 = __importDefault(require("swagger-jsdoc"));
 const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
+const port = process.env.PORT || 4000;
+const serverUrl = `http://localhost:${port}`;
 const options = {
     definition: {
         openapi: '3.0.0',
@@ -16,7 +20,7 @@ const options = {
         },
         servers: [
             {
-                url: 'http://localhost:4000',
+                url: serverUrl,
             },
         ],
         components: {
@@ -188,7 +192,7 @@ const options = {
             },
         },
     },
-    apis: ['./build/routes/*.js', './build/controllers/*.js'],
+    apis: ['./build/routes/*.ts', './build/controllers/*.ts'],
 };
 const swaggerSpec = (0, swagger_jsdoc_1.default)(options);
 function setupSwagger(app) {
