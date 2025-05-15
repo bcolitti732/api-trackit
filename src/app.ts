@@ -64,7 +64,7 @@ const userSockets = new Map();
 // Manejar conexiones de Socket.IO para el chat
 chatIO.on('connection', (socket) => {
     console.log(`Usuario conectado al chat: ${socket.id}`);
-
+    
     // Verificación JWT para el socket principal
     socket.use(([event, ...args], next) => {
         const token = socket.handshake.auth.token;
@@ -100,8 +100,7 @@ chatIO.on('connection', (socket) => {
     // Manejar evento para unirse a una sala
     socket.on('join_room', (roomId: string) => {
         socket.join(roomId);
-        console.log(`Usuario con ID: ${socket.id} se unió a la sala: ${roomId}`);
-        console.log(`Usuario: ${socket.data.user}`);
+        console.log(`Usuario con ID: ${socket.id} se unió a la sala: ${roomId}`);        
         // socket.to(roomId).emit('status', { status: 'joined', user: socket.data.user });
     });
 

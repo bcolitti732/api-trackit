@@ -119,7 +119,7 @@ async startConversation(user1Id: string, user2Id: string): Promise<IMessage> {
     // Guardar el mensaje en la base de datos
     return await newMessage.save();
 }
-    
+
 }
 
 export default new MessageService();

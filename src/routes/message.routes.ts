@@ -7,7 +7,7 @@ router.post('/', postMessage);
 router.get('/contacts/:userId', getUserContacts);
 router.get('/:user1Id/:user2Id', getMessagesBetweenUsers);
 router.get('/:userId', getMessagesByUser);
-router.put('/:id', acknowledgeMessage);
+router.put('/acknowledge', acknowledgeMessage);
 router.post('/start', startConversation);
 
 export default router;

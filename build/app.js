@@ -118,7 +118,6 @@ chatIO.on('connection', (socket) => {
     socket.on('join_room', (roomId) => {
         socket.join(roomId);
         console.log(`Usuario con ID: ${socket.id} se unió a la sala: ${roomId}`);
-        console.log(`Usuario: ${socket.data.user}`);
     });
     socket.on('send_message', (data) => __awaiter(void 0, void 0, void 0, function* () {
         try {

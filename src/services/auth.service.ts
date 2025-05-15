@@ -28,21 +28,32 @@ export class AuthService {
     return await newUser.save();
   }
 
-  async login(email: string, password: string): Promise<{ accessToken: string; refreshToken: string }> {
-    const user = await UserModel.findOne({ email });
+  async login(email: string, password: string): Promise<{ accessToken: string; refreshToken: string; user: any }> {
+    const user = await UserModel.findOne({ email }).populate('packets'); // Asegúrate de que "packets" es un campo relacionado
     if (!user) {
-      throw new Error("User not found");
+        throw new Error("User not found");
     }
 
     const isPasswordValid = await verified(password, user.password);
     if (!isPasswordValid) {
-      throw new Error("Invalid credentials");
+        throw new Error("Invalid credentials");
     }
 
     const accessToken = generateToken({name: user.name, id: user._id.toString(),type: "access"}, "access");
     const refreshToken = generateToken({ name: user.name, id: user._id.toString(), type: "refresh"}, "refresh");
 
-    return { accessToken, refreshToken };
+    return {
+        accessToken,
+        refreshToken,
+        user: {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            birthdate: user.birthdate,
+            packets: user.packets, 
+        },
+    };
   }
 
   async refreshToken(refreshToken: string): Promise<string> {

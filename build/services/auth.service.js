@@ -38,7 +38,7 @@ class AuthService {
     }
     login(email, password) {
         return __awaiter(this, void 0, void 0, function* () {
-            const user = yield user_1.UserModel.findOne({ email });
+            const user = yield user_1.UserModel.findOne({ email }).populate('packets');
             if (!user) {
                 throw new Error("User not found");
             }
@@ -48,7 +48,18 @@ class AuthService {
             }
             const accessToken = (0, jwt_handle_1.generateToken)({ name: user.name, id: user._id.toString(), type: "access" }, "access");
             const refreshToken = (0, jwt_handle_1.generateToken)({ name: user.name, id: user._id.toString(), type: "refresh" }, "refresh");
-            return { accessToken, refreshToken };
+            return {
+                accessToken,
+                refreshToken,
+                user: {
+                    id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    phone: user.phone,
+                    birthdate: user.birthdate,
+                    packets: user.packets,
+                },
+            };
         });
     }
     refreshToken(refreshToken) {

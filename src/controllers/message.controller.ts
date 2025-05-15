@@ -112,13 +112,12 @@ export async function getMessagesBetweenUsers(req: Request, res: Response): Prom
 
 /**
  * @swagger
- * /api/messages/{messageId}:
+ * /api/messages/acknowledge:
  *   patch:
  *     summary: Mark a message as acknowledged
  *     tags: [Messages]
  *     parameters:
  *       - in: path
- *         name: messageId
  *         required: true
  *         schema:
  *           type: string
@@ -135,7 +134,7 @@ export async function getMessagesBetweenUsers(req: Request, res: Response): Prom
  */
 export async function acknowledgeMessage(req: Request, res: Response): Promise<void> {
     try {
-        const messageId = req.params.messageId;
+        const messageId = req.body.messageId;
         const updatedMessage = await messageService.acknowledgeMessage(messageId);
         res.status(200).json(updatedMessage);
     } catch (error) {
