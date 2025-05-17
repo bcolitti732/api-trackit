@@ -48,17 +48,23 @@ class AuthService {
             }
             const accessToken = (0, jwt_handle_1.generateToken)({ name: user.name, role: user.role, id: user._id.toString(), type: "access" }, "access");
             const refreshToken = (0, jwt_handle_1.generateToken)({ name: user.name, role: user.role, id: user._id.toString(), type: "refresh" }, "refresh");
+            const isProfileComplete = user.isProfileComplete;
             return {
                 accessToken,
                 refreshToken,
                 user: {
-                    id: user._id,
                     name: user.name,
                     email: user.email,
                     phone: user.phone,
                     birthdate: user.birthdate,
+                    password: user.password,
+                    available: user.available,
+                    role: user.role,
+                    deliveryProfileId: user.deliveryProfileId,
+                    isProfileComplete: user.isProfileComplete,
                     packets: user.packets,
                 },
+                isProfileComplete,
             };
         });
     }
@@ -90,6 +96,22 @@ class AuthService {
             const refreshToken = (0, jwt_handle_1.generateToken)({ name: user.name, role: user.role, id: user._id.toString(), type: "refresh" }, "refresh");
             console.log("Perfil completado:", updatedUser);
             return { user: updatedUser, accessToken, refreshToken };
+        });
+    }
+    loginOrRegisterGoogleUser(email, name) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let user = yield user_1.UserModel.findOne({ email });
+            if (!user) {
+                user = new user_1.UserModel({
+                    email,
+                    name: name || email.split("@")[0],
+                    isProfileComplete: false,
+                });
+                yield user.save();
+            }
+            const accessToken = (0, jwt_handle_1.generateToken)({ name: user.name, role: user.role, id: user._id.toString(), type: "access" }, "access");
+            const refreshToken = (0, jwt_handle_1.generateToken)({ name: user.name, role: user.role, id: user._id.toString(), type: "refresh" }, "refresh");
+            return { user, accessToken, refreshToken };
         });
     }
 }

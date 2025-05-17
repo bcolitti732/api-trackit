@@ -32,7 +32,7 @@ const userSchema = new mongoose_1.Schema({
     },
     birthdate: {
         type: Date,
-        required: true,
+        required: false,
     },
     isProfileComplete: {
         type: Boolean,

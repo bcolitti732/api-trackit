@@ -28,7 +28,7 @@ export class AuthService {
     return await newUser.save();
   }
 
-  async login(email: string, password: string): Promise<{ accessToken: string; refreshToken: string; user: any }> {
+  async login(email: string, password: string): Promise<{ accessToken: string; refreshToken: string; isProfileComplete: boolean, user: IUser }> {
     const user = await UserModel.findOne({ email }).populate('packets'); // Asegúrate de que "packets" es un campo relacionado
     if (!user) {
         throw new Error("User not found");
@@ -41,18 +41,24 @@ export class AuthService {
 
     const accessToken = generateToken({ name: user.name , role: user.role,id: user._id.toString(),type: "access" }, "access");
     const refreshToken = generateToken({ name: user.name, role: user.role, id: user._id.toString(),type: "refresh" }, "refresh");
-
+    const isProfileComplete = user.isProfileComplete;
     return {
         accessToken,
         refreshToken,
         user: {
-            id: user._id,
             name: user.name,
             email: user.email,
             phone: user.phone,
             birthdate: user.birthdate,
+            password: user.password,
+            available: user.available,
+            role: user.role,
+            deliveryProfileId: user.deliveryProfileId,
+            isProfileComplete: user.isProfileComplete,
             packets: user.packets, 
+
         },
+        isProfileComplete,
     };
   }
 
@@ -91,4 +97,29 @@ export class AuthService {
   
     return { user: updatedUser, accessToken, refreshToken };
   }
+
+    /**
+   * Login o registro automático con Google
+   */
+  async loginOrRegisterGoogleUser(email: string, name?: string): Promise<{ user: IUser, accessToken: string, refreshToken: string }> {
+    let user = await UserModel.findOne({ email });
+
+    // Si el usuario no existe, lo registramos
+    if (!user) {
+      user = new UserModel({
+        email,
+        name: name || email.split("@")[0], // Nombre por defecto si no lo proporciona Google
+        isProfileComplete: false, // Perfil incompleto hasta que agregue más datos
+      });
+
+      await user.save();
+    }
+
+    const accessToken = generateToken({ name: user.name , role: user.role,id: user._id.toString(),type: "access" }, "access");
+    const refreshToken = generateToken({ name: user.name, role: user.role, id: user._id.toString(),type: "refresh" }, "refresh");
+    
+
+    return { user, accessToken, refreshToken };
+  }
+
 }
