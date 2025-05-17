@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "tsc && node ./build/app.js"
+    "start": "node ./build/app.js",
+    "build": "tsc"
   },
   "dependencies": {
     "@types/bcryptjs": "^2.4.6",

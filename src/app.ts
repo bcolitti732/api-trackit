@@ -39,7 +39,7 @@ app.use(passport.initialize());
 
 app.listen(app.get('port'), () => {
     console.log(`Server running on port ${app.get('port')}`);
-    console.log(`Swagger disponible a http://localhost:${app.get('port')}/api-docs`);
++    console.log(`Swagger disponible a http://${process.env.BACKEND_URL?.replace(/^https?:\/\//, '') || 'localhost:' + app.get('port')}/api-docs`);
 });
 
 // -------------------- SERVIDOR DE CHAT SOCKET.IO --------------------
@@ -134,6 +134,7 @@ chatIO.on('connection', (socket) => {
 // Iniciar el servidor de chat
 chatServer.listen(CHAT_PORT, () => {
     console.log(`Servidor de chat escuchando en http://localhost:${CHAT_PORT}`);
++    console.log(`Servidor de chat escuchando en http://${process.env.BACKEND_URL?.replace(/^https?:\/\//, '').replace(/:\d+$/, '') || 'localhost'}:${CHAT_PORT}`);
 });
 
 // -------------------- RUTAS API Y SERVIDOR EXPRESS --------------------

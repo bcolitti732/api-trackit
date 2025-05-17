@@ -1,7 +1,7 @@
 import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import { Application } from 'express';
-
+const backendUrl = process.env.BACKEND_URL || 'http://localhost:4000';
 const options = {
     definition: {
         openapi: '3.0.0',
@@ -12,7 +12,8 @@ const options = {
         },
         servers: [
             {
-                url: 'http://localhost:4000',
+
+                url: backendUrl,
             },
         ],
         components: {

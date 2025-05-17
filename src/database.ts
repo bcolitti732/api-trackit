@@ -1,6 +1,6 @@
 import { connect, connection } from 'mongoose'
 
-const mongoURI = 'mongodb://localhost:27017/trackit-DB';  
+const mongoURI = process.env.MONGO_URI || 'mongodb://192.168.10.71:27017/trackit-DB';
 
 export async function startConnection() {
     try {
