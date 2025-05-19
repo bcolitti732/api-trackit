@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.setupSwagger = setupSwagger;
 const swagger_jsdoc_1 = __importDefault(require("swagger-jsdoc"));
 const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
+const backendUrl = process.env.BACKEND_URL || 'http://localhost:4000';
 const options = {
     definition: {
         openapi: '3.0.0',
@@ -16,7 +17,7 @@ const options = {
         },
         servers: [
             {
-                url: 'http://localhost:4000',
+                url: backendUrl,
             },
         ],
         components: {

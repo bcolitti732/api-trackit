@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config(); // Cargar variables de entorno desde el archivo .env
+
 import express, { RequestHandler } from 'express';
 import { startConnection } from './database';
 import { setupSwagger } from './swagger'; 
@@ -7,13 +10,13 @@ import packetRoutes from './routes/packet.routes';
 import authRoutes from './routes/auth.routes';
 import messageRoutes from './routes/message.routes';
 import passport from 'passport';
-import dotenv from 'dotenv';
+
 import { createServer } from 'node:http';
 import * as http from 'node:http';
 import { Server, Socket } from 'socket.io';
 import { IMessage, MessageModel } from './models/message';
 
-dotenv.config(); // Cargar variables de entorno desde el archivo .env
+
 
 import './utils/passport.google'; // Ensure the Google strategy is registered
 import { verifyToken } from './utils/jwt.handle';
@@ -21,7 +24,7 @@ import IJwtPayload from './models/JWTPayload';
 
 const app: express.Application = express();
 
-app.set('port', process.env.PORT || 4000);
+app.set('port', process.env.PORT || 5000);
 
 app.use(corsOptions);
 app.use(express.json() as RequestHandler);

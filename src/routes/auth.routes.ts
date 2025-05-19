@@ -39,7 +39,7 @@ router.get(
 router.get('/google/callback', passport.authenticate('google', { session: false }), (req, res) => {
     const { accessToken, refreshToken, isProfileComplete } = req.user as any;
 
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:4002';
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:4001';
     const redirectUrl = new URL(`${frontendUrl}/login/callback`);
     redirectUrl.searchParams.append('accessToken', accessToken);
     redirectUrl.searchParams.append('refreshToken', refreshToken);

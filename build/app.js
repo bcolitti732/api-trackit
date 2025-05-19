@@ -45,6 +45,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
 const express_1 = __importDefault(require("express"));
 const database_1 = require("./database");
 const swagger_1 = require("./swagger");
@@ -54,15 +56,13 @@ const packet_routes_1 = __importDefault(require("./routes/packet.routes"));
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 const message_routes_1 = __importDefault(require("./routes/message.routes"));
 const passport_1 = __importDefault(require("passport"));
-const dotenv_1 = __importDefault(require("dotenv"));
 const http = __importStar(require("node:http"));
 const socket_io_1 = require("socket.io");
 const message_1 = require("./models/message");
-dotenv_1.default.config();
 require("./utils/passport.google");
 const jwt_handle_1 = require("./utils/jwt.handle");
 const app = (0, express_1.default)();
-app.set('port', process.env.PORT || 4000);
+app.set('port', process.env.PORT || 5000);
 app.use(cors_1.default);
 app.use(express_1.default.json());
 (0, database_1.startConnection)();
@@ -73,8 +73,9 @@ app.use('/api/auth', auth_routes_1.default);
 app.use('/api/messages', message_routes_1.default);
 app.use(passport_1.default.initialize());
 app.listen(app.get('port'), () => {
+    var _a;
     console.log(`Server running on port ${app.get('port')}`);
-    console.log(`Swagger disponible a http://localhost:${app.get('port')}/api-docs`);
+    +console.log(`Swagger disponible a http://${((_a = process.env.BACKEND_URL) === null || _a === void 0 ? void 0 : _a.replace(/^https?:\/\//, '')) || 'localhost:' + app.get('port')}/api-docs`);
 });
 const CHAT_PORT = process.env.CHAT_PORT || 3001;
 const chatServer = http.createServer();
@@ -140,7 +141,9 @@ chatIO.on('connection', (socket) => {
     }));
 });
 chatServer.listen(CHAT_PORT, () => {
+    var _a;
     console.log(`Servidor de chat escuchando en http://localhost:${CHAT_PORT}`);
+    +console.log(`Servidor de chat escuchando en http://${((_a = process.env.BACKEND_URL) === null || _a === void 0 ? void 0 : _a.replace(/^https?:\/\//, '').replace(/:\d+$/, '')) || 'localhost'}:${CHAT_PORT}`);
 });
 exports.default = app;
 //# sourceMappingURL=app.js.map
