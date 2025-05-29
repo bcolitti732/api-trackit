@@ -61,6 +61,12 @@ const options = {
                                 type: 'string',
                             },
                         },
+                        deliveryQueue: {
+                            type: 'array',
+                            items: {
+                                type: 'string',
+                            },
+                        },
                     },
                 },
                 AuthTokens: {

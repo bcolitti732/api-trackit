@@ -11,7 +11,9 @@ import {
     deactivateUserById, 
     getUserPackets, 
     addPacketToUser, 
-    getUserByName
+    getUserByName,
+    getDeliveryQueue, // Importamos la función del controlador
+    updateDeliveryQueue, // Importamos la función del controlador
 } from '../controllers/user.controller';
 import { authMiddleware } from '../middlewares/auth.middleware';
 
@@ -28,6 +30,11 @@ router.delete('/:id', deleteUserById);
 router.put('/:id/deactivate', deactivateUserById);
 router.get('/:id/packets', authMiddleware, getUserPackets);
 router.post('/:name/packets', authMiddleware, addPacketToUser);
+
+// Nuevas rutas para la deliveryQueue, para probarlas borrar authMiddleware ya que el inicio de sesión no está implementado en swagger!!
+router.get('/:name/delivery-queue',  getDeliveryQueue);
+router.put('/:name/delivery-queue',  updateDeliveryQueue);
+
 
 
 export default router;

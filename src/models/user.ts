@@ -10,6 +10,7 @@ export interface IUser {
   //role: "admin" | "user" | "dealer";
   birthdate: Date;
   isProfileComplete: boolean;
+  deliveryQueue: ObjectId[]; // Nuevo propiedad para repartidores
 }
 
 const userSchema = new Schema<IUser>({
@@ -56,6 +57,8 @@ const userSchema = new Schema<IUser>({
   },
   
   packets: [{ type: Schema.Types.ObjectId, ref: "Packet" }],
+
+  deliveryQueue: [{ type: Schema.Types.ObjectId, ref: "Packet" }], // Nuevo campo para la cola de entregas
   
 });
 
