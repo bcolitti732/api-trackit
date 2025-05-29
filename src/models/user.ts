@@ -9,7 +9,8 @@ export interface IUser {
   role: "admin" | "user" | "delivery";
   birthdate: Date;
   isProfileComplete: boolean;
-  deliveryProfileId: ObjectId;
+  deliveredPackets?: ObjectId[];
+  assignedPackets?: ObjectId[];
 }
 
 const userSchema = new Schema<IUser>({
@@ -63,12 +64,8 @@ const userSchema = new Schema<IUser>({
     default: "user",
   },
 
-  deliveryProfileId: {
-    type: Schema.Types.ObjectId,
-    ref: "Delivery",
-    required: false
-  }
-  
+  deliveredPackets: [{ type: Schema.Types.ObjectId, ref: "Packet" }],
+  assignedPackets: [{ type: Schema.Types.ObjectId, ref: "Packet" }]
 });
 
 userSchema.set("toJSON", {

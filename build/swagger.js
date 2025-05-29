@@ -108,32 +108,17 @@ const options = {
                                 type: 'string',
                             },
                         },
-                        deliveryProfileId: {
-                            type: 'string',
-                        },
-                    },
-                },
-                Delivery: {
-                    type: 'object',
-                    required: ['userId', 'assignedPacket', 'vehicle'],
-                    properties: {
-                        userId: {
-                            type: 'string',
-                        },
-                        assignedPacket: {
-                            type: 'array',
-                            items: {
-                                type: 'string',
-                            },
-                        },
                         deliveredPackets: {
                             type: 'array',
                             items: {
                                 type: 'string',
                             },
                         },
-                        vehicle: {
-                            type: 'string',
+                        assignedPackets: {
+                            type: 'array',
+                            items: {
+                                type: 'string',
+                            },
                         },
                     },
                 },

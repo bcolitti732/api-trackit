@@ -16,7 +16,10 @@ exports.getUserByName = getUserByName;
 exports.updateUserById = updateUserById;
 exports.deactivateUserById = deactivateUserById;
 exports.getUserPackets = getUserPackets;
+exports.getAssignedPackets = getAssignedPackets;
+exports.getOptimizedRoute = getOptimizedRoute;
 exports.addPacketToUser = addPacketToUser;
+exports.assignPacket = assignPacket;
 exports.deleteUserById = deleteUserById;
 const user_service_1 = require("../services/user.service");
 const userService = new user_service_1.UserService();
@@ -124,6 +127,47 @@ function getUserPackets(req, res) {
         }
     });
 }
+function getAssignedPackets(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const userId = req.params.id;
+            const assignedPackets = yield userService.getAssignedPackets(userId);
+            res.status(200).json(assignedPackets);
+        }
+        catch (error) {
+            if (error.message === "User is not a delivery") {
+                res.status(400).json({ message: error.message });
+            }
+            else if (error.message === "User not found") {
+                res.status(404).json({ message: error.message });
+            }
+            else {
+                res.status(500).json({ message: "Error retrieving assigned packets", error });
+            }
+        }
+    });
+}
+function getOptimizedRoute(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const userId = req.params.id;
+            const startLocation = req.query.startLocation;
+            const route = yield userService.getOptimizedRoute(userId, startLocation);
+            res.status(200).json(route);
+        }
+        catch (error) {
+            if (error.message === "User is not a delivery") {
+                res.status(400).json({ message: error.message });
+            }
+            else if (error.message === "User not found") {
+                res.status(404).json({ message: error.message });
+            }
+            else {
+                res.status(500).json({ message: "Error retrieving optimized route", error });
+            }
+        }
+    });
+}
 function addPacketToUser(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -142,6 +186,35 @@ function addPacketToUser(req, res) {
         }
         catch (error) {
             res.status(500).json({ message: "Error adding packet to user", error });
+        }
+    });
+}
+function assignPacket(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const userId = req.params.id;
+            const { packetId } = req.body;
+            if (!packetId) {
+                res.status(400).json({ message: "Packet ID is required" });
+                return;
+            }
+            const updatedUser = yield userService.assignPacket(userId, packetId);
+            if (!updatedUser) {
+                res.status(404).json({ message: "User not found" });
+                return;
+            }
+            res.status(200).json(updatedUser);
+        }
+        catch (error) {
+            if (error.message === "User is not a delivery") {
+                res.status(400).json({ message: error.message });
+            }
+            else if (error.message === "User not found") {
+                res.status(404).json({ message: error.message });
+            }
+            else {
+                res.status(500).json({ message: "Error assigning packet to user", error });
+            }
         }
     });
 }

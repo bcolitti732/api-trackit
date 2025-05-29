@@ -4,7 +4,7 @@ import { generateToken, verifyToken } from "../utils/jwt.handle";
 
 export class AuthService {
   async register(user: Partial<IUser>): Promise<IUser> {
-    const { email, password, name, phone, available, packets, birthdate, role, deliveryProfileId } = user;
+    const { email, password, name, phone, available, packets, birthdate, role, deliveredPackets, assignedPackets } = user;
 
     const existingUser = await UserModel.findOne({ email });
     if (existingUser) {
@@ -22,7 +22,8 @@ export class AuthService {
       packets,
       birthdate,
       role,
-      deliveryProfileId,
+      deliveredPackets,
+      assignedPackets,
     });
 
     return await newUser.save();
@@ -52,10 +53,11 @@ export class AuthService {
             birthdate: user.birthdate,
             password: user.password,
             available: user.available,
-            role: user.role,
-            deliveryProfileId: user.deliveryProfileId,
+            role: user.role,          
             isProfileComplete: user.isProfileComplete,
             packets: user.packets, 
+            deliveredPackets: user.deliveredPackets || [],
+            assignedPackets: user.assignedPackets || [],
 
         },
         isProfileComplete,

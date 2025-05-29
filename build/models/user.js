@@ -44,11 +44,8 @@ const userSchema = new mongoose_1.Schema({
         enum: ["admin", "user", "delivery"],
         default: "user",
     },
-    deliveryProfileId: {
-        type: mongoose_1.Schema.Types.ObjectId,
-        ref: "Delivery",
-        required: false
-    }
+    deliveredPackets: [{ type: mongoose_1.Schema.Types.ObjectId, ref: "Packet" }],
+    assignedPackets: [{ type: mongoose_1.Schema.Types.ObjectId, ref: "Packet" }]
 });
 userSchema.set("toJSON", {
     transform: (doc, ret) => {

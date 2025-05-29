@@ -268,6 +268,106 @@ export async function getUserPackets(req: Request, res: Response): Promise<void>
         res.status(500).json({ message: "Error retrieving packets", error });
     }
 }
+/**
+ * @swagger
+ * /api/users/{id}/assigned-packets:
+ *   get:
+ *     summary: Get all assigned packets of a delivery user
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The user ID
+ *     responses:
+ *       200:
+ *         description: List of assigned packets
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Packet'
+ *       400:
+ *         description: User is not a delivery
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+export async function getAssignedPackets(req: Request, res: Response): Promise<void> {
+    try {
+        const userId = req.params.id;
+        const assignedPackets = await userService.getAssignedPackets(userId);
+
+        res.status(200).json(assignedPackets);
+    } catch (error: any) {
+        if (error.message === "User is not a delivery") {
+            res.status(400).json({ message: error.message });
+        } else if (error.message === "User not found") {
+            res.status(404).json({ message: error.message });
+        } else {
+            res.status(500).json({ message: "Error retrieving assigned packets", error });
+        }
+    }
+}
+
+/**
+ * @swagger
+ * /api/users/{id}/optimized-route:
+ *   get:
+ *     summary: Get the optimized delivery route for a delivery user
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The user ID
+ *       - in: query
+ *         name: startLocation
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Optional starting location as "lat,lng"
+ *     responses:
+ *       200:
+ *         description: Optimized route (ordered list of packets)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Packet'
+ *       400:
+ *         description: User is not a delivery or invalid request
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+export async function getOptimizedRoute(req: Request, res: Response): Promise<void> {
+    try {
+        const userId = req.params.id;
+        const startLocation = req.query.startLocation as string | undefined;
+        const route = await userService.getOptimizedRoute(userId, startLocation);
+
+        res.status(200).json(route);
+    } catch (error: any) {
+        if (error.message === "User is not a delivery") {
+            res.status(400).json({ message: error.message });
+        } else if (error.message === "User not found") {
+            res.status(404).json({ message: error.message });
+        } else {
+            res.status(500).json({ message: "Error retrieving optimized route", error });
+        }
+    }
+}
+
+
 
 /**
  * @swagger
@@ -327,6 +427,71 @@ export async function addPacketToUser(req: Request, res: Response): Promise<void
     }
 }
 
+/**
+ * @swagger
+ * /api/users/{id}/assign-packet:
+ *   post:
+ *     summary: Assign a packet to a delivery user
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The user ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               packetId:
+ *                 type: string
+ *                 description: The ID of the packet to assign
+ *     responses:
+ *       200:
+ *         description: Packet assigned to user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       400:
+ *         description: User is not a delivery or invalid request
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+export async function assignPacket(req: Request, res: Response): Promise<void> {
+    try {
+        const userId = req.params.id;
+        const { packetId } = req.body;
+
+        if (!packetId) {
+            res.status(400).json({ message: "Packet ID is required" });
+            return;
+        }
+
+        const updatedUser = await userService.assignPacket(userId, packetId);
+
+        if (!updatedUser) {
+            res.status(404).json({ message: "User not found" });
+            return;
+        }
+
+        res.status(200).json(updatedUser);
+    } catch (error: any) {
+        if (error.message === "User is not a delivery") {
+            res.status(400).json({ message: error.message });
+        } else if (error.message === "User not found") {
+            res.status(404).json({ message: error.message });
+        } else {
+            res.status(500).json({ message: "Error assigning packet to user", error });
+        }
+    }
+}
 
 export async function deleteUserById(req: Request, res: Response): Promise<void> {
     try {

@@ -16,7 +16,7 @@ const jwt_handle_1 = require("../utils/jwt.handle");
 class AuthService {
     register(user) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { email, password, name, phone, available, packets, birthdate, role, deliveryProfileId } = user;
+            const { email, password, name, phone, available, packets, birthdate, role, deliveredPackets, assignedPackets } = user;
             const existingUser = yield user_1.UserModel.findOne({ email });
             if (existingUser) {
                 throw new Error("User already exists");
@@ -31,7 +31,8 @@ class AuthService {
                 packets,
                 birthdate,
                 role,
-                deliveryProfileId,
+                deliveredPackets,
+                assignedPackets,
             });
             return yield newUser.save();
         });
@@ -60,9 +61,10 @@ class AuthService {
                     password: user.password,
                     available: user.available,
                     role: user.role,
-                    deliveryProfileId: user.deliveryProfileId,
                     isProfileComplete: user.isProfileComplete,
                     packets: user.packets,
+                    deliveredPackets: user.deliveredPackets || [],
+                    assignedPackets: user.assignedPackets || [],
                 },
                 isProfileComplete,
             };
