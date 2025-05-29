@@ -1,7 +1,9 @@
 import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import { Application } from 'express';
+
 const backendUrl = process.env.BACKEND_URL || 'http://localhost:4000';
+
 const options = {
     definition: {
         openapi: '3.0.0',
@@ -12,8 +14,33 @@ const options = {
         },
         servers: [
             {
-
                 url: backendUrl,
+            },
+        ],
+        tags: [
+            {
+                name: 'Notifications',
+                description: 'Operaciones relacionadas con notificaciones push',
+            },
+            {
+                name: 'Users',
+                description: 'Operaciones relacionadas con usuarios',
+            },
+            {
+                name: 'Packets',
+                description: 'Operaciones relacionadas con paquetes',
+            },
+            {
+                name: 'Messages',
+                description: 'Operaciones relacionadas con mensajes',
+            },
+            {
+                name: 'Auth',
+                description: 'Operaciones de autenticación',
+            },
+            {
+                name: 'Delivery',
+                description: 'Operaciones relacionadas con repartidores',
             },
         ],
         components: {
@@ -22,42 +49,17 @@ const options = {
                     type: 'object',
                     required: ['name', 'description', 'status', 'createdAt', 'deliveredAt', 'size', 'weight', 'origin'],
                     properties: {
-                        name: {
-                            type: 'string',
-                        },
-                        description: {
-                            type: 'string',
-                        },
-                        status: {
-                            type: 'string',
-                        },
-                        createdAt: {
-                            type: 'string',
-                            format: 'date-time',
-                        },
-                        deliveredAt: {
-                            type: 'string',
-                            format: 'date-time',
-                        },
-                        size: {
-                            type: 'number',
-                        },
-                        weight: {
-                            type: 'number',
-                        },
-                        deliveryId: {
-                            type: 'string',
-                        },
-                        origin: {
-                            type: 'string',
-                        },
-                        destination: {
-                            type: 'string',
-                        },
-                        location: {
-                            type: 'string',
-                        },
-
+                        name: { type: 'string' },
+                        description: { type: 'string' },
+                        status: { type: 'string' },
+                        createdAt: { type: 'string', format: 'date-time' },
+                        deliveredAt: { type: 'string', format: 'date-time' },
+                        size: { type: 'number' },
+                        weight: { type: 'number' },
+                        deliveryId: { type: 'string' },
+                        origin: { type: 'string' },
+                        destination: { type: 'string' },
+                        location: { type: 'string' },
                     },
                 },
                 Message: {
@@ -70,130 +72,80 @@ const options = {
                         created: { type: 'string', format: 'date-time', description: 'Timestamp when the message was created' },
                         acknowledged: { type: 'boolean', description: 'Whether the message has been read' },
                         roomId: { type: 'string', description: 'ID of the chat room' },
-                    },                    
                     },
+                },
                 User: {
                     type: 'object',
                     required: ['name', 'email', 'password', 'phone', 'available', 'birthdate', 'role'],
                     properties: {
-                        name: {
-                            type: 'string',
-                        },
-                        email: {
-                            type: 'string',
-                        },
-                        password: {
-                            type: 'string',
-                        },
-                        phone: {
-                            type: 'string',
-                        },
-                        available: {
-                            type: 'boolean',
-                        },
-                        birthdate: {
-                            type: 'string',
-                            format: 'date',
-                        },
-                        role: {
-                            type: 'string',
-                            enum: ['admin', 'user', 'delivery'],
-                        },
+                        name: { type: 'string' },
+                        email: { type: 'string' },
+                        password: { type: 'string' },
+                        phone: { type: 'string' },
+                        available: { type: 'boolean' },
+                        birthdate: { type: 'string', format: 'date' },
+                        role: { type: 'string', enum: ['admin', 'user', 'delivery'] },
                         packets: {
                             type: 'array',
-                            items: {
-                                type: 'string',
-                            },
+                            items: { type: 'string' },
                         },
-                        deliveryProfileId: {
-                            type: 'string',
-                        },
+                        deliveryProfileId: { type: 'string' },
                     },
                 },
                 Delivery: {
                     type: 'object',
                     required: ['userId', 'assignedPacket', 'vehicle'],
                     properties: {
-                        userId: {
-                            type: 'string',
-                        },
+                        userId: { type: 'string' },
                         assignedPacket: {
                             type: 'array',
-                            items: {
-                                type: 'string',
-                            },
+                            items: { type: 'string' },
                         },
                         deliveredPackets: {
                             type: 'array',
-                            items: {
-                                type: 'string',
-                            },
+                            items: { type: 'string' },
                         },
-                        vehicle: {
-                            type: 'string',
-                        },
+                        vehicle: { type: 'string' },
                     },
                 },
                 AuthTokens: {
                     type: 'object',
                     properties: {
-                        accessToken: {
-                            type: 'string',
-                        },
-                        refreshToken: {
-                            type: 'string',
-                        },
+                        accessToken: { type: 'string' },
+                        refreshToken: { type: 'string' },
                     },
                 },
                 RegisterRequest: {
                     type: 'object',
                     required: ['name', 'email', 'password', 'phone', 'available', 'packets', 'birthdate', 'role'],
                     properties: {
-                        name: {
-                            type: 'string',
-                        },
-                        email: {
-                            type: 'string',
-                        },
-                        password: {
-                            type: 'string',
-                        },
-                        phone: {
-                            type: 'string',
-                        },
-                        available: {
-                            type: 'boolean',
-                        },
-                        birthdate: {
-                            type: 'string',
-                            format: 'date',
-                        },
+                        name: { type: 'string' },
+                        email: { type: 'string' },
+                        password: { type: 'string' },
+                        phone: { type: 'string' },
+                        available: { type: 'boolean' },
+                        birthdate: { type: 'string', format: 'date' },
                         packets: {
                             type: 'array',
-                            items: {
-                                type: 'string',
-                            },
+                            items: { type: 'string' },
                         },
-                        role: {
-                            type: 'string',
-                            enum: ['admin', 'user', 'delivery'],
-                        },
-                        deliveryProfileId: {
-                            type: 'string',
-                        },
-
+                        role: { type: 'string', enum: ['admin', 'user', 'delivery'] },
+                        deliveryProfileId: { type: 'string' },
                     },
                 },
                 LoginRequest: {
                     type: 'object',
                     required: ['email', 'password'],
                     properties: {
-                        email: {
-                            type: 'string',
-                        },
-                        password: {
-                            type: 'string',
-                        },
+                        email: { type: 'string' },
+                        password: { type: 'string' },
+                    },
+                },
+                Notification: {
+                    type: 'object',
+                    properties: {
+                        title: { type: 'string', example: 'TrackIt Notification' },
+                        body: { type: 'string', example: 'Your package is near the destination!' },
                     },
                 },
             },
@@ -201,6 +153,7 @@ const options = {
     },
     apis: ['./src/routes/*.ts', './src/controllers/*.ts'], // Swagger generará la documentación desde los comentarios
 };
+
 const swaggerSpec = swaggerJSDoc(options);
 
 export function setupSwagger(app: Application): void {

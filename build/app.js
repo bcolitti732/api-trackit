@@ -1,37 +1,4 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -45,6 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.userSockets = exports.chatIO = void 0;
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const express_1 = __importDefault(require("express"));
@@ -55,11 +23,10 @@ const user_routes_1 = __importDefault(require("./routes/user.routes"));
 const packet_routes_1 = __importDefault(require("./routes/packet.routes"));
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 const message_routes_1 = __importDefault(require("./routes/message.routes"));
-const passport_1 = __importDefault(require("passport"));
-const http = __importStar(require("node:http"));
+const notification_routes_1 = __importDefault(require("./routes/notification.routes"));
+const node_http_1 = __importDefault(require("node:http"));
 const socket_io_1 = require("socket.io");
 const message_1 = require("./models/message");
-require("./utils/passport.google");
 const jwt_handle_1 = require("./utils/jwt.handle");
 const app = (0, express_1.default)();
 app.set('port', process.env.PORT || 5000);
@@ -71,54 +38,52 @@ app.use('/api/users', user_routes_1.default);
 app.use('/api/packets', packet_routes_1.default);
 app.use('/api/auth', auth_routes_1.default);
 app.use('/api/messages', message_routes_1.default);
-app.use(passport_1.default.initialize());
+app.use('/api/notifications', notification_routes_1.default);
 app.listen(app.get('port'), () => {
     var _a;
     console.log(`Server running on port ${app.get('port')}`);
-    +console.log(`Swagger disponible a http://${((_a = process.env.BACKEND_URL) === null || _a === void 0 ? void 0 : _a.replace(/^https?:\/\//, '')) || 'localhost:' + app.get('port')}/api-docs`);
+    console.log(`Swagger disponible a http://${((_a = process.env.BACKEND_URL) === null || _a === void 0 ? void 0 : _a.replace(/^https?:\/\//, '')) || 'localhost:' + app.get('port')}/api-docs`);
 });
-const CHAT_PORT = process.env.CHAT_PORT || 3001;
-const chatServer = http.createServer();
-const chatIO = new socket_io_1.Server(chatServer, {
+const CHAT_PORT = Number(process.env.CHAT_PORT) || 3001;
+const chatServer = node_http_1.default.createServer();
+exports.chatIO = new socket_io_1.Server(chatServer, {
     cors: {
         origin: '*',
         methods: ['GET', 'POST'],
-        credentials: true
+        credentials: true,
+    },
+});
+exports.userSockets = new Map();
+exports.chatIO.use((socket, next) => {
+    const token = socket.handshake.auth.token;
+    if (!token) {
+        return next(new Error('unauthorized'));
+    }
+    const payload = (0, jwt_handle_1.verifyToken)(token, 'access');
+    if (payload && payload.id) {
+        socket.data.userId = payload.id;
+        socket.data.userName = payload.name;
+        return next();
+    }
+    else {
+        return next(new Error('unauthorized'));
     }
 });
-const userSockets = new Map();
-chatIO.on('connection', (socket) => {
+exports.chatIO.on('connection', (socket) => {
     console.log(`Usuario conectado al chat: ${socket.id}`);
-    socket.use(([event, ...args], next) => {
-        const token = socket.handshake.auth.token;
-        if (!token)
-            return next(new Error('unauthorized'));
-        try {
-            const payload = (0, jwt_handle_1.verifyToken)(token, 'access');
-            if (payload && payload.id) {
-                socket.data.userId = payload.id;
-                socket.data.userName = payload.name;
+    exports.userSockets.set(socket.data.userId, socket.id);
+    socket.on('disconnect', () => {
+        console.log(`Socket desconectado: ${socket.id}`);
+        exports.userSockets.forEach((sid, uid) => {
+            if (sid === socket.id) {
+                exports.userSockets.delete(uid);
+                console.log(`Usuario desconectado: ${uid}`);
             }
-            else {
-                return next(new Error('unauthorized'));
-            }
-            userSockets.set(socket.data.userId, socket.id);
-            return next();
-        }
-        catch (err) {
-            return next(new Error('unauthorized'));
-        }
-    });
-    socket.on('error', (err) => {
-        if (err && err.message == 'unauthorized') {
-            console.debug('unauthorized user');
-            socket.emit('status', { status: 'unauthorized' });
-            socket.disconnect();
-        }
+        });
     });
     socket.on('join_room', (roomId) => {
         socket.join(roomId);
-        console.log(`Usuario con ID: ${socket.id} se unió a la sala: ${roomId}`);
+        console.log(`Usuario con ID ${socket.data.userId} se unió a la sala: ${roomId}`);
     });
     socket.on('send_message', (data) => __awaiter(void 0, void 0, void 0, function* () {
         try {
@@ -128,7 +93,7 @@ chatIO.on('connection', (socket) => {
                 roomId: data.roomId,
                 content: data.content,
                 created: new Date(),
-                acknowledged: false
+                acknowledged: false,
             });
             yield newMessage.save();
             socket.to(data.roomId).emit('receive_message', newMessage);
@@ -142,8 +107,7 @@ chatIO.on('connection', (socket) => {
 });
 chatServer.listen(CHAT_PORT, () => {
     var _a;
-    console.log(`Servidor de chat escuchando en http://localhost:${CHAT_PORT}`);
-    +console.log(`Servidor de chat escuchando en http://${((_a = process.env.BACKEND_URL) === null || _a === void 0 ? void 0 : _a.replace(/^https?:\/\//, '').replace(/:\d+$/, '')) || 'localhost'}:${CHAT_PORT}`);
+    console.log(`Servidor de chat escuchando en http://${((_a = process.env.BACKEND_URL) === null || _a === void 0 ? void 0 : _a.replace(/^https?:\/\//, '').replace(/:\d+$/, '')) || 'localhost'}:${CHAT_PORT}`);
 });
 exports.default = app;
 //# sourceMappingURL=app.js.map
