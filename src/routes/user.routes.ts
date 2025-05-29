@@ -11,7 +11,9 @@ import {
     deactivateUserById, 
     getUserPackets, 
     addPacketToUser, 
-    getUserByName
+    getUserByName,
+    getAssignedPackets,
+    assignPacketToDelivery
 } from '../controllers/user.controller';
 import { authMiddleware } from '../middlewares/auth.middleware';
 
@@ -28,6 +30,10 @@ router.delete('/:id', deleteUserById);
 router.put('/:id/deactivate', deactivateUserById);
 router.get('/:id/packets', authMiddleware, getUserPackets);
 router.post('/:name/packets', addPacketToUser);
+router.get('/:id/assignedPackets', getAssignedPackets);
+router.post('/assign-packet', assignPacketToDelivery);
+
+
 
 
 export default router;

@@ -21,6 +21,24 @@ class UserService {
             if (user.packets && Array.isArray(user.packets)) {
                 user.packets = user.packets.filter((id) => mongoose_1.default.Types.ObjectId.isValid(id.toString()));
             }
+            if (user.deliveryProfile) {
+                const { assignedPacket, deliveredPackets, vehicle } = user.deliveryProfile;
+                if ((assignedPacket && !Array.isArray(assignedPacket)) ||
+                    (deliveredPackets && !Array.isArray(deliveredPackets)) ||
+                    (vehicle && typeof vehicle !== 'string')) {
+                    throw new Error("Invalid deliveryProfile format.");
+                }
+                if (!vehicle || vehicle.trim() === '') {
+                    user.deliveryProfile.vehicle = 'N/A';
+                }
+            }
+            else {
+                user.deliveryProfile = {
+                    assignedPacket: [],
+                    deliveredPackets: [],
+                    vehicle: 'N/A',
+                };
+            }
             const newUser = new user_1.UserModel(user);
             return yield newUser.save();
         });
@@ -29,7 +47,7 @@ class UserService {
         return __awaiter(this, void 0, void 0, function* () {
             const skip = (page - 1) * limit;
             const totalUsers = yield user_1.UserModel.countDocuments({ available: true });
-            const users = yield user_1.UserModel.find().skip(skip).limit(limit);
+            const users = yield user_1.UserModel.find({ available: true }).skip(skip).limit(limit);
             return {
                 totalUsers,
                 totalPages: Math.ceil(totalUsers / limit),
@@ -40,7 +58,7 @@ class UserService {
     }
     getUserById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield user_1.UserModel.findOne({ _id: id, available: true });
+            return yield user_1.UserModel.findOne({ _id: id, available: true }).lean();
         });
     }
     getUserByName(name) {
@@ -50,6 +68,9 @@ class UserService {
     }
     updateUserById(id, user) {
         return __awaiter(this, void 0, void 0, function* () {
+            if (user.deliveryProfile && user.role !== "delivery") {
+                throw new Error("Only users with role 'delivery' can have a delivery profile.");
+            }
             return yield user_1.UserModel.findOneAndUpdate({ _id: id, available: true }, user, { new: true });
         });
     }
@@ -84,6 +105,40 @@ class UserService {
                 return yield user_1.UserModel.findByIdAndUpdate(user._id, { $push: { packets: packetId } }, { new: true, runValidators: false });
             }
             return user;
+        });
+    }
+    getAssignedPacketsByUserId(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield user_1.UserModel.findById(userId)
+                .populate('deliveryProfile.assignedPacket')
+                .exec();
+            if (!user || !user.deliveryProfile)
+                return null;
+            return user.deliveryProfile.assignedPacket;
+        });
+    }
+    assignPacketToDelivery(userId, packetId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!mongoose_1.default.Types.ObjectId.isValid(userId) || !mongoose_1.default.Types.ObjectId.isValid(packetId)) {
+                throw new Error("Invalid userId or packetId.");
+            }
+            const user = yield user_1.UserModel.findById(userId);
+            if (!user || user.role !== 'delivery') {
+                throw new Error("Delivery user not found.");
+            }
+            if (!user.deliveryProfile) {
+                user.deliveryProfile = {
+                    assignedPacket: [],
+                    deliveredPackets: [],
+                    vehicle: 'N/A',
+                };
+            }
+            const alreadyAssigned = user.deliveryProfile.assignedPacket.some((assigned) => assigned.toString() === packetId);
+            if (alreadyAssigned) {
+                throw new Error("Packet already assigned to this delivery.");
+            }
+            user.deliveryProfile.assignedPacket.push(packetId);
+            return yield user.save();
         });
     }
 }

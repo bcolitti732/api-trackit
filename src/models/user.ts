@@ -9,75 +9,50 @@ export interface IUser {
   role: "admin" | "user" | "delivery";
   birthdate: Date;
   isProfileComplete: boolean;
-  deliveryProfileId: ObjectId;
+  deliveryProfile?: {
+    assignedPacket: ObjectId[];
+    deliveredPackets: ObjectId[];
+    vehicle: string;
+  };
 }
 
-const userSchema = new Schema<IUser>({
-  name: {
-    type: String, 
-    required: true
-  },
 
+const userSchema = new Schema<IUser>({
+  name: { type: String, required: true },
   email: {
     type: String,
     required: true,
     validate: {
-      validator: function (value: string): boolean {
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-      },
-      message: (props: any) => `${props.value} is not a valid email!`
-    }
+      validator: (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
+      message: (props: any) => `${props.value} is not a valid email!`,
+    },
   },
-
-  password: {
-    type: String,
-    required: false
-  },
-
-  phone: {
-    type: String,
-    required: false
-  },
-
-  available: {
-    type: Boolean,
-    required: true,
-    default: true
-  },
-
-  birthdate: {
-    type: Date,
-    required: false,
-  },
-
-  isProfileComplete: {
-    type: Boolean,
-    default: true,
-  },
-  
+  password: { type: String, required: false },
+  phone: { type: String, required: false },
+  available: { type: Boolean, required: true, default: true },
+  birthdate: { type: Date, required: false },
+  isProfileComplete: { type: Boolean, default: true },
   packets: [{ type: Schema.Types.ObjectId, ref: "Packet" }],
-
   role: {
     type: String,
     enum: ["admin", "user", "delivery"],
     default: "user",
   },
-
-  deliveryProfileId: {
-    type: Schema.Types.ObjectId,
-    ref: "Delivery",
-    required: false
-  }
-  
+  deliveryProfile: {
+    assignedPacket: [{ type: Schema.Types.ObjectId, ref: "Packet" }],
+    deliveredPackets: [{ type: Schema.Types.ObjectId, ref: "Packet" }],
+    vehicle: { type: String },
+  },
 });
 
 userSchema.set("toJSON", {
   transform: (doc, ret) => {
     ret.id = ret._id;
     delete ret._id;
-    delete ret.__v; 
+    delete ret.__v;
     return ret;
   },
 });
+
 
 export const UserModel = model("User", userSchema);

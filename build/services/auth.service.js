@@ -16,12 +16,26 @@ const jwt_handle_1 = require("../utils/jwt.handle");
 class AuthService {
     register(user) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { email, password, name, phone, available, packets, birthdate, role, deliveryProfileId } = user;
+            const { email, password, name, phone, available, packets, birthdate, role, deliveryProfile } = user;
             const existingUser = yield user_1.UserModel.findOne({ email });
             if (existingUser) {
                 throw new Error("User already exists");
             }
             const hashedPassword = yield (0, bcrypt_handle_1.encrypt)(password);
+            let deliveryProfileCleaned = deliveryProfile;
+            if (deliveryProfile) {
+                const { assignedPacket, deliveredPackets, vehicle } = deliveryProfile;
+                if ((assignedPacket && !Array.isArray(assignedPacket)) ||
+                    (deliveredPackets && !Array.isArray(deliveredPackets)) ||
+                    (vehicle && typeof vehicle !== 'string')) {
+                    throw new Error("Invalid deliveryProfile format.");
+                }
+                deliveryProfileCleaned = {
+                    assignedPacket: assignedPacket !== null && assignedPacket !== void 0 ? assignedPacket : [],
+                    deliveredPackets: deliveredPackets !== null && deliveredPackets !== void 0 ? deliveredPackets : [],
+                    vehicle: vehicle || 'N/A',
+                };
+            }
             const newUser = new user_1.UserModel({
                 email,
                 password: hashedPassword,
@@ -31,7 +45,7 @@ class AuthService {
                 packets,
                 birthdate,
                 role,
-                deliveryProfileId,
+                deliveryProfile: deliveryProfileCleaned,
             });
             return yield newUser.save();
         });
@@ -60,7 +74,7 @@ class AuthService {
                     password: user.password,
                     available: user.available,
                     role: user.role,
-                    deliveryProfileId: user.deliveryProfileId,
+                    deliveryProfile: user.deliveryProfile,
                     isProfileComplete: user.isProfileComplete,
                     packets: user.packets,
                 },
@@ -94,7 +108,6 @@ class AuthService {
             const updatedUser = yield user.save();
             const accessToken = (0, jwt_handle_1.generateToken)({ name: user.name, role: user.role, id: user._id.toString(), type: "access" }, "access");
             const refreshToken = (0, jwt_handle_1.generateToken)({ name: user.name, role: user.role, id: user._id.toString(), type: "refresh" }, "refresh");
-            console.log("Perfil completado:", updatedUser);
             return { user: updatedUser, accessToken, refreshToken };
         });
     }

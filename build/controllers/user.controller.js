@@ -18,6 +18,8 @@ exports.deactivateUserById = deactivateUserById;
 exports.getUserPackets = getUserPackets;
 exports.addPacketToUser = addPacketToUser;
 exports.deleteUserById = deleteUserById;
+exports.getAssignedPackets = getAssignedPackets;
+exports.assignPacketToDelivery = assignPacketToDelivery;
 const user_service_1 = require("../services/user.service");
 const userService = new user_service_1.UserService();
 function postUser(req, res) {
@@ -28,7 +30,7 @@ function postUser(req, res) {
             res.status(201).json(newUser);
         }
         catch (error) {
-            res.status(400).json({ message: "Error creating user", error });
+            res.status(400).json({ message: "Error creating user", error: error instanceof Error ? error.message : error });
         }
     });
 }
@@ -158,6 +160,42 @@ function deleteUserById(req, res) {
         }
         catch (error) {
             res.status(500).json({ message: "Error deleting user", error });
+        }
+    });
+}
+function getAssignedPackets(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const userId = req.params.id;
+            const packets = yield userService.getAssignedPacketsByUserId(userId);
+            if (!packets || packets.length === 0) {
+                res.status(404).json({ message: "User not found or no assigned packets available" });
+                return;
+            }
+            res.status(200).json(packets);
+        }
+        catch (error) {
+            res.status(500).json({ message: "Error retrieving assigned packets", error });
+        }
+    });
+}
+function assignPacketToDelivery(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const { userId, packetId } = req.body;
+        if (!userId || !packetId) {
+            res.status(400).json({ message: "userId and packetId are required" });
+            return;
+        }
+        try {
+            const updatedUser = yield userService.assignPacketToDelivery(userId, packetId);
+            if (!updatedUser) {
+                res.status(404).json({ message: "User not found or invalid role" });
+                return;
+            }
+            res.status(200).json(updatedUser);
+        }
+        catch (error) {
+            res.status(500).json({ message: "Error assigning packet", error });
         }
     });
 }

@@ -18,5 +18,7 @@ router.delete('/:id', user_controller_1.deleteUserById);
 router.put('/:id/deactivate', user_controller_1.deactivateUserById);
 router.get('/:id/packets', auth_middleware_1.authMiddleware, user_controller_1.getUserPackets);
 router.post('/:name/packets', user_controller_1.addPacketToUser);
+router.get('/:id/assignedPackets', user_controller_1.getAssignedPackets);
+router.post('/assign-packet', user_controller_1.assignPacketToDelivery);
 exports.default = router;
 //# sourceMappingURL=user.routes.js.map

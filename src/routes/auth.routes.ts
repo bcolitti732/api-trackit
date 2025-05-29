@@ -6,14 +6,90 @@ import { authMiddleware } from "../middlewares/auth.middleware";
 const router = Router();
 
 /**
- * Ruta para registrar un nuevo usuario.
+ * @swagger
+ * /api/auth/register:
+ *   post:
+ *     summary: Registra un nuevo usuario
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *               - password
+ *             properties:
+ *               name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               available:
+ *                 type: boolean
+ *               packets:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               birthdate:
+ *                 type: string
+ *                 format: date
+ *               role:
+ *                 type: string
+ *               deliveryProfile:
+ *                 type: object
+ *                 properties:
+ *                   assignedPacket:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *                   deliveredPackets:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *                   vehicle:
+ *                     type: string
+ *     responses:
+ *       201:
+ *         description: Usuario creado exitosamente
+ *       400:
+ *         description: Error en la solicitud
  */
 router.post("/register", register);
 
 /**
- * Ruta para iniciar sesión y obtener tokens.
+ * @swagger
+ * /api/auth/login:
+ *   post:
+ *     summary: Inicia sesión de un usuario
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Login exitoso
+ *       401:
+ *         description: Credenciales inválidas
  */
 router.post("/login", login);
+
 
 /**
  * Ruta para verificar un token (access o refresh).

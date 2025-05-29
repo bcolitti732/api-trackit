@@ -2,17 +2,44 @@ import { IUser, UserModel } from '../models/user';
 import mongoose from 'mongoose';
 
 export class UserService {
-    async postUser(user: Partial<IUser>): Promise<IUser> {
-        // Limpia el array de packets: elimina vacíos o IDs inválidos
-        if (user.packets && Array.isArray(user.packets)) {
-            user.packets = user.packets.filter(
-                (id) => mongoose.Types.ObjectId.isValid(id.toString())
-            );
-        }
-    
-        const newUser = new UserModel(user);
-        return await newUser.save();
+ async postUser(user: Partial<IUser>): Promise<IUser> {
+    // Limpia el array de packets: elimina vacíos o IDs inválidos
+    if (user.packets && Array.isArray(user.packets)) {
+        user.packets = user.packets.filter(
+            (id) => mongoose.Types.ObjectId.isValid(id.toString())
+        );
     }
+
+    // Si deliveryProfile existe, validar que tenga la estructura correcta (opcional)
+    if (user.deliveryProfile) {
+        const { assignedPacket, deliveredPackets, vehicle } = user.deliveryProfile;
+
+        if (
+            (assignedPacket && !Array.isArray(assignedPacket)) ||
+            (deliveredPackets && !Array.isArray(deliveredPackets)) ||
+            (vehicle && typeof vehicle !== 'string')
+        ) {
+            throw new Error("Invalid deliveryProfile format.");
+        }
+
+        // Asignar valor por defecto a vehicle si no existe o está vacío
+        if (!vehicle || vehicle.trim() === '') {
+            user.deliveryProfile.vehicle = 'N/A';  // o '' si prefieres cadena vacía pero forzada
+        }
+    } else {
+        // Si no existe deliveryProfile, podrías inicializarlo vacío si quieres
+        user.deliveryProfile = {
+            assignedPacket: [],
+            deliveredPackets: [],
+            vehicle: 'N/A',
+        };
+    }
+
+    // Ahora sí crear el usuario
+    const newUser = new UserModel(user);
+    return await newUser.save();
+}
+
 
     async getAllUsers(page: number, limit: number): Promise<{ 
         totalUsers: number; 
@@ -21,10 +48,8 @@ export class UserService {
         data: IUser[]; 
     }> {
         const skip = (page - 1) * limit;
-    
         const totalUsers = await UserModel.countDocuments({ available: true });
-    
-        const users = await UserModel.find().skip(skip).limit(limit);
+        const users = await UserModel.find({ available: true }).skip(skip).limit(limit);
     
         return {
             totalUsers,
@@ -35,7 +60,7 @@ export class UserService {
     }
 
     async getUserById(id: string): Promise<IUser | null> {
-        return await UserModel.findOne({ _id: id, available: true });
+        return await UserModel.findOne({ _id: id, available: true }).lean();
     }
 
     async getUserByName(name: string): Promise<IUser | null> {
@@ -43,7 +68,16 @@ export class UserService {
     }
 
     async updateUserById(id: string, user: Partial<IUser>): Promise<IUser | null> {
-        return await UserModel.findOneAndUpdate({ _id: id, available: true }, user, { new: true });
+        // Validación: no permitir deliveryProfile en usuarios que no sean 'delivery'
+        if (user.deliveryProfile && user.role !== "delivery") {
+            throw new Error("Only users with role 'delivery' can have a delivery profile.");
+        }
+
+        return await UserModel.findOneAndUpdate(
+            { _id: id, available: true },
+            user,
+            { new: true }
+        );
     }
 
     async deleteUserById(id: string): Promise<IUser | null> {
@@ -55,8 +89,8 @@ export class UserService {
         if (!user) {
             throw new Error("User not found");
         }
-    
-        user.available = !user.available; // para clickar y desclickar al usuario y que se active o desactive en funcion de su estado
+
+        user.available = !user.available;
         return await user.save();
     }
 
@@ -81,8 +115,49 @@ export class UserService {
 
         return user;
     }
+    async getAssignedPacketsByUserId(userId: string) {
+    const user = await UserModel.findById(userId)
+      .populate('deliveryProfile.assignedPacket')
+      .exec();
 
+    if (!user || !user.deliveryProfile) return null;
 
+    return user.deliveryProfile.assignedPacket;
+  }
+  async assignPacketToDelivery(userId: string, packetId: string): Promise<IUser | null> {
+  if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(packetId)) {
+    throw new Error("Invalid userId or packetId.");
+  }
+
+  const user = await UserModel.findById(userId);
+  if (!user || user.role !== 'delivery') {
+    throw new Error("Delivery user not found.");
+  }
+
+  if (!user.deliveryProfile) {
+    user.deliveryProfile = {
+      assignedPacket: [],
+      deliveredPackets: [],
+      vehicle: 'N/A',
+    };
+  }
+
+  const alreadyAssigned = user.deliveryProfile.assignedPacket.some(
+    (assigned) => assigned.toString() === packetId
+  );
+
+  if (alreadyAssigned) {
+    throw new Error("Packet already assigned to this delivery.");
+  }
+
+  // 👇 agrega el packetId como string (o Schema.Types.ObjectId si tu esquema lo requiere)
+  user.deliveryProfile.assignedPacket.push(packetId as any);
+
+  return await user.save();
 }
+
+  
+}
+
 
 export default new UserService();

@@ -72,68 +72,45 @@ const options = {
                         roomId: { type: 'string', description: 'ID of the chat room' },
                     },                    
                     },
-                User: {
+               User: {
                     type: 'object',
                     required: ['name', 'email', 'password', 'phone', 'available', 'birthdate', 'role'],
                     properties: {
-                        name: {
-                            type: 'string',
-                        },
-                        email: {
-                            type: 'string',
-                        },
-                        password: {
-                            type: 'string',
-                        },
-                        phone: {
-                            type: 'string',
-                        },
-                        available: {
-                            type: 'boolean',
-                        },
-                        birthdate: {
-                            type: 'string',
-                            format: 'date',
-                        },
-                        role: {
-                            type: 'string',
-                            enum: ['admin', 'user', 'delivery'],
-                        },
-                        packets: {
-                            type: 'array',
-                            items: {
-                                type: 'string',
-                            },
-                        },
-                        deliveryProfileId: {
-                            type: 'string',
-                        },
+                    name: { type: 'string' },
+                    email: { type: 'string' },
+                    password: { type: 'string' },
+                    phone: { type: 'string' },
+                    available: { type: 'boolean' },
+                    birthdate: { type: 'string', format: 'date' },
+                    role: { type: 'string', enum: ['admin', 'user', 'delivery'] },
+                    packets: {
+                        type: 'array',
+                        items: { type: 'string' },
                     },
-                },
-                Delivery: {
-                    type: 'object',
-                    required: ['userId', 'assignedPacket', 'vehicle'],
-                    properties: {
-                        userId: {
-                            type: 'string',
-                        },
+                    deliveryProfile: {
+                        type: 'object',
+                        properties: {
                         assignedPacket: {
                             type: 'array',
-                            items: {
-                                type: 'string',
-                            },
+                            items: { type: 'string' }, // asumiendo ObjectId como string
+                            description: 'IDs de paquetes asignados',
                         },
                         deliveredPackets: {
                             type: 'array',
-                            items: {
-                                type: 'string',
-                            },
-                        },
-                        vehicle: {
-                            type: 'string',
-                        },
+                            items: { type: 'string' },
+                            description: 'IDs de paquetes entregados',
+                    },
+                    vehicle: {
+                        type: 'string',
+                        description: 'Vehículo asignado al delivery',
                     },
                 },
+                description: 'Perfil de delivery asociado al usuario',
+                nullable: true,
+             },
+        },
+            },
+
                 AuthTokens: {
                     type: 'object',
                     properties: {
@@ -147,43 +124,42 @@ const options = {
                 },
                 RegisterRequest: {
                     type: 'object',
-                    required: ['name', 'email', 'password', 'phone', 'available', 'packets', 'birthdate', 'role'],
+                    required: ['name', 'email', 'password', 'phone', 'available', 'birthdate', 'role'],
                     properties: {
-                        name: {
-                            type: 'string',
-                        },
-                        email: {
-                            type: 'string',
-                        },
-                        password: {
-                            type: 'string',
-                        },
-                        phone: {
-                            type: 'string',
-                        },
-                        available: {
-                            type: 'boolean',
-                        },
-                        birthdate: {
-                            type: 'string',
-                            format: 'date',
-                        },
-                        packets: {
+                    name: { type: 'string' },
+                    email: { type: 'string' },
+                    password: { type: 'string' },
+                    phone: { type: 'string' },
+                    available: { type: 'boolean' },
+                    birthdate: { type: 'string', format: 'date' },
+                    role: { type: 'string', enum: ['admin', 'user', 'delivery'] },
+                    packets: {
+                        type: 'array',
+                        items: { type: 'string' },
+                    },
+                    deliveryProfile: {
+                        type: 'object',
+                        properties: {
+                        assignedPacket: {
                             type: 'array',
-                            items: {
-                                type: 'string',
-                            },
+                            items: { type: 'string' }, // asumiendo ObjectId como string
+                            description: 'IDs de paquetes asignados',
                         },
-                        role: {
-                            type: 'string',
-                            enum: ['admin', 'user', 'delivery'],
-                        },
-                        deliveryProfileId: {
-                            type: 'string',
-                        },
-
+                        deliveredPackets: {
+                            type: 'array',
+                            items: { type: 'string' },
+                            description: 'IDs de paquetes entregados',
+                    },
+                    vehicle: {
+                        type: 'string',
+                        description: 'Vehículo asignado al delivery',
                     },
                 },
+                description: 'Perfil de delivery asociado al usuario',
+                nullable: true,
+             },
+        },
+            },
                 LoginRequest: {
                     type: 'object',
                     required: ['email', 'password'],

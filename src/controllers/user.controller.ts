@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { IUser } from '../models/user';
 import { UserService } from '../services/user.service';
 
+
 const userService = new UserService();
 
 /**
@@ -32,7 +33,8 @@ export async function postUser(req: Request, res: Response): Promise<void> {
         const newUser = await userService.postUser(user);
         res.status(201).json(newUser);
     } catch (error) {
-        res.status(400).json({ message: "Error creating user", error });
+        res.status(400).json({ message: "Error creating user",  error: error instanceof Error ? error.message : error  });
+
     }
 }
 
@@ -66,7 +68,6 @@ export async function getAllUsers(req: Request, res: Response): Promise<void> {
         res.status(400).json({ message: "Error getting users", error });
     }
 }
-
 
 /**
  * @swagger
@@ -133,6 +134,7 @@ export async function getUserByName(req: Request, res: Response): Promise<void> 
         res.status(400).json({ message: "Error getting user", error });
     }
 }
+
 /**
  * @swagger
  * /api/users/{id}:
@@ -167,14 +169,12 @@ export async function updateUserById(req: Request, res: Response): Promise<void>
         const id = req.params.id;
         const userUpdates = req.body as Partial<IUser>;
 
-        // Obtener el usuario actual de la base de datos
         const existingUser = await userService.getUserById(id);
         if (!existingUser) {
             res.status(404).json({ message: "User not found" });
             return;
         }
 
-        // Conservar los valores existentes si los campos están vacíos o no se envían
         const updatedUserData: Partial<IUser> = {
             name: userUpdates.name || existingUser.name,
             email: userUpdates.email || existingUser.email,
@@ -185,7 +185,6 @@ export async function updateUserById(req: Request, res: Response): Promise<void>
             role: userUpdates.role || existingUser.role,
         };
 
-        // Actualizar el usuario con los nuevos datos
         const updatedUser = await userService.updateUserById(id, updatedUserData);
         res.status(200).json(updatedUser);
     } catch (error) {
@@ -327,7 +326,6 @@ export async function addPacketToUser(req: Request, res: Response): Promise<void
     }
 }
 
-
 export async function deleteUserById(req: Request, res: Response): Promise<void> {
     try {
         const id = req.params.id;
@@ -343,3 +341,98 @@ export async function deleteUserById(req: Request, res: Response): Promise<void>
         res.status(500).json({ message: "Error deleting user", error });
     }
 }
+/**
+ * @swagger
+ * /api/users/{id}/assignedPackets:
+ *   get:
+ *     summary: Get assigned packets of a delivery user by user ID
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The user ID
+ *     responses:
+ *       200:
+ *         description: List of assigned packets
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Packet'
+ *       404:
+ *         description: User not found or no assigned packets available
+ *       500:
+ *         description: Internal server error
+ */
+export async function getAssignedPackets(req: Request, res: Response): Promise<void> {
+    try {
+        const userId = req.params.id;
+        const packets = await userService.getAssignedPacketsByUserId(userId);
+
+        if (!packets || packets.length === 0) {
+            res.status(404).json({ message: "User not found or no assigned packets available" });
+            return;
+        }
+
+        res.status(200).json(packets);
+    } catch (error) {
+        res.status(500).json({ message: "Error retrieving assigned packets", error });
+    }
+}
+/**
+ * @swagger
+ * /api/users/assign-packet:
+ *   post:
+ *     summary: Assign a packet to a delivery user
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: string
+ *               packetId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Packet successfully assigned to user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Missing parameters or validation error
+ *       404:
+ *         description: User not found or invalid role
+ *       500:
+ *         description: Internal server error
+ */
+export async function assignPacketToDelivery(req: Request, res: Response): Promise<void> {
+    const { userId, packetId } = req.body;
+
+    if (!userId || !packetId) {
+        res.status(400).json({ message: "userId and packetId are required" });
+        return;
+    }
+
+    try {
+        const updatedUser = await userService.assignPacketToDelivery(userId, packetId);
+
+        if (!updatedUser) {
+            res.status(404).json({ message: "User not found or invalid role" });
+            return;
+        }
+
+        res.status(200).json(updatedUser);
+    } catch (error) {
+        res.status(500).json({ message: "Error assigning packet", error });
+    }
+}
+
