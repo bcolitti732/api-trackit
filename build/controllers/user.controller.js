@@ -16,6 +16,7 @@ exports.getUserByName = getUserByName;
 exports.updateUserById = updateUserById;
 exports.deactivateUserById = deactivateUserById;
 exports.getUserPackets = getUserPackets;
+exports.getOptimizedRoute = getOptimizedRoute;
 exports.addPacketToUser = addPacketToUser;
 exports.deleteUserById = deleteUserById;
 exports.getAssignedPackets = getAssignedPackets;
@@ -123,6 +124,28 @@ function getUserPackets(req, res) {
         }
         catch (error) {
             res.status(500).json({ message: "Error retrieving packets", error });
+        }
+    });
+}
+function getOptimizedRoute(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const userId = req.params.id;
+            const startLocation = req.query.startLocation;
+            const route = yield userService.getOptimizedRoute(userId, startLocation);
+            res.status(200).json(route);
+        }
+        catch (error) {
+            if (error.message === "User is not a delivery") {
+                res.status(400).json({ message: error.message });
+            }
+            else if (error.message === "User not found") {
+                res.status(404).json({ message: error.message });
+            }
+            else {
+                console.log("Error retrieving optimized route:", error);
+                res.status(500).json({ message: "Error retrieving optimized route", error });
+            }
         }
     });
 }

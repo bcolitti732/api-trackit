@@ -1,6 +1,7 @@
+import { IPacket } from '../models/packet';
 import { IUser, UserModel } from '../models/user';
 import mongoose from 'mongoose';
-
+import { parseCoordinates, haversineDistance, LatLng } from "../utils/geoUtils";
 export class UserService {
  async postUser(user: Partial<IUser>): Promise<IUser> {
     // Limpia el array de packets: elimina vacíos o IDs inválidos
@@ -155,7 +156,37 @@ export class UserService {
 
   return await user.save();
 }
+ async getOptimizedRoute(userId: string, startLocation?: string): Promise<IPacket[]> {
+        const user = await UserModel.findById(userId).populate("deliveryProfile.assignedPacket");
+        if (!user) throw new Error("User not found");
+        if (user.role !== "delivery") throw new Error("User is not a delivery");
 
+        const packets: IPacket[] = (user.deliveryProfile?.assignedPacket as unknown as IPacket[]) || [];
+
+        // Filtramos los que tienen coordenadas válidas
+        const packetsWithCoords = packets.filter(p => p.destination && parseCoordinates(p.destination));
+
+        // Punto de partida
+        const startCoords = startLocation
+            ? parseCoordinates(startLocation)
+            : parseCoordinates(packetsWithCoords[0]?.location || packetsWithCoords[0]?.origin || packetsWithCoords[0]?.destination!);
+
+        if (!startCoords) throw new Error("Starting location is invalid or missing");
+
+        // Ordenar paquetes por distancia desde el punto de partida
+        const sortedPackets = [...packetsWithCoords].sort((a, b) => {
+            const aCoords = parseCoordinates(a.destination!);
+            const bCoords = parseCoordinates(b.destination!);
+            if (!aCoords || !bCoords) return 0;
+
+            const distA = haversineDistance(startCoords, aCoords);
+            const distB = haversineDistance(startCoords, bCoords);
+
+            return distA - distB;
+        });
+
+        return sortedPackets;
+    }
   
 }
 

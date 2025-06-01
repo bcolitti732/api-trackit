@@ -95,7 +95,7 @@ const options = {
                             items: { type: 'string' }, // asumiendo ObjectId como string
                             description: 'IDs de paquetes asignados',
                         },
-                        deliveredPackets: {
+                        assignedPackets: {
                             type: 'array',
                             items: { type: 'string' },
                             description: 'IDs de paquetes entregados',

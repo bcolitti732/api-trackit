@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserService = void 0;
 const user_1 = require("../models/user");
 const mongoose_1 = __importDefault(require("mongoose"));
+const geoUtils_1 = require("../utils/geoUtils");
 class UserService {
     postUser(user) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -139,6 +140,33 @@ class UserService {
             }
             user.deliveryProfile.assignedPacket.push(packetId);
             return yield user.save();
+        });
+    }
+    getOptimizedRoute(userId, startLocation) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a, _b, _c, _d;
+            const user = yield user_1.UserModel.findById(userId).populate("deliveryProfile.assignedPacket");
+            if (!user)
+                throw new Error("User not found");
+            if (user.role !== "delivery")
+                throw new Error("User is not a delivery");
+            const packets = ((_a = user.deliveryProfile) === null || _a === void 0 ? void 0 : _a.assignedPacket) || [];
+            const packetsWithCoords = packets.filter(p => p.destination && (0, geoUtils_1.parseCoordinates)(p.destination));
+            const startCoords = startLocation
+                ? (0, geoUtils_1.parseCoordinates)(startLocation)
+                : (0, geoUtils_1.parseCoordinates)(((_b = packetsWithCoords[0]) === null || _b === void 0 ? void 0 : _b.location) || ((_c = packetsWithCoords[0]) === null || _c === void 0 ? void 0 : _c.origin) || ((_d = packetsWithCoords[0]) === null || _d === void 0 ? void 0 : _d.destination));
+            if (!startCoords)
+                throw new Error("Starting location is invalid or missing");
+            const sortedPackets = [...packetsWithCoords].sort((a, b) => {
+                const aCoords = (0, geoUtils_1.parseCoordinates)(a.destination);
+                const bCoords = (0, geoUtils_1.parseCoordinates)(b.destination);
+                if (!aCoords || !bCoords)
+                    return 0;
+                const distA = (0, geoUtils_1.haversineDistance)(startCoords, aCoords);
+                const distB = (0, geoUtils_1.haversineDistance)(startCoords, bCoords);
+                return distA - distB;
+            });
+            return sortedPackets;
         });
     }
 }

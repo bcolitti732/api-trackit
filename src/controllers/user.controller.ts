@@ -270,6 +270,63 @@ export async function getUserPackets(req: Request, res: Response): Promise<void>
 
 /**
  * @swagger
+ * /api/users/{id}/optimized-route:
+ *   get:
+ *     summary: Get the optimized delivery route for a delivery user
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The user ID
+ *       - in: query
+ *         name: startLocation
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Optional starting location as "lat,lng"
+ *     responses:
+ *       200:
+ *         description: Optimized route (ordered list of packets)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Packet'
+ *       400:
+ *         description: User is not a delivery or invalid request
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+export async function getOptimizedRoute(req: Request, res: Response): Promise<void> {
+    try {
+        const userId = req.params.id;
+        const startLocation = req.query.startLocation as string | undefined;
+        const route = await userService.getOptimizedRoute(userId, startLocation);
+
+        res.status(200).json(route);
+    } catch (error: any) {
+        if (error.message === "User is not a delivery") {
+            res.status(400).json({ message: error.message });
+        } else if (error.message === "User not found") {
+            res.status(404).json({ message: error.message });
+        } else {
+            console.log("Error retrieving optimized route:", error);
+            res.status(500).json({ message: "Error retrieving optimized route", error });
+            
+        }
+    }
+}
+
+
+
+/**
+ * @swagger
  * /api/users/{name}/packets:
  *   post:
  *     summary: Add a packet to a user
