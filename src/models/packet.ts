@@ -1,7 +1,7 @@
-import { ObjectId, Schema, model } from 'mongoose';
+import { Schema, model } from 'mongoose';
 
 export interface IPacket {
-  _id: ObjectId;
+  _id?: string;
   name: string;
   description: string;
   status: string;

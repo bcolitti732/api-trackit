@@ -26,3 +26,12 @@ npm i nodemon
 ```
 npm install ts-node --save-dev
 ```
+
+## Mínim 2
+Cambios realizados:
+Añadida la funcionalidad para gestionar la deliveryQueue de los usuarios.
+Nuevas rutas:
+GET /api/users/:name/delivery-queue: Obtiene la cola de reparto.
+PUT /api/users/:name/delivery-queue: Actualiza la cola de reparto.
+Actualizado el modelo User con la propiedad deliveryQueue como un arreglo de ObjectId.
+Documentación de las nuevas rutas añadida en Swagger.

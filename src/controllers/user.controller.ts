@@ -492,4 +492,57 @@ export async function assignPacketToDelivery(req: Request, res: Response): Promi
         res.status(500).json({ message: "Error assigning packet", error });
     }
 }
+/**
+ * @swagger
+ * /api/users/{name}/delivery-queue:
+ *   put:
+ *     summary: Replace the delivery queue of a user
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: name
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The user name
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               queue:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: The new delivery queue
+ *     responses:
+ *       200:
+ *         description: Delivery queue updated successfully
+ *       400:
+ *         description: Invalid input
+ *       500:
+ *         description: Internal server error
+ */
+export async function updateDeliveryQueue(req: Request, res: Response): Promise<void> {
+    try {
+        const userName = req.params.name;
+        const { queue } = req.body;
 
+        if (!Array.isArray(queue)) {
+            res.status(400).json({ message: "Queue must be an array of packet IDs" });
+            return;
+        }
+
+        const updatedUser = await userService.updateDeliveryQueue( userName, queue );
+        if(!updatedUser) {
+            res.status(404).json({ message: "User not found" });
+            return;
+        }
+        // Assuming the update was successful, we can return a success message
+        res.status(200).json({ user: updatedUser, message: "Delivery queue updated successfully" });
+    } catch (error) {
+        res.status(500).json({ message: "Error updating delivery queue", error });
+    }
+}

@@ -187,7 +187,30 @@ export class UserService {
 
         return sortedPackets;
     }
-  
+   async updateDeliveryQueue(userName: string, newQueue: ObjectId []): Promise<IUser | null> {
+        const user = await UserModel.findOne({ name: userName, available: true });
+        if (!user) {
+            throw new Error("User not found");
+        }
+
+
+        user.deliveryQueue = newQueue;
+        await user.save();
+        return user;
+    }
+    
+    async getDeliveryQueue(userName: string): Promise<IUser["deliveryQueue"] | null> {
+    try {
+        const user = await UserModel.findOne({ name: userName, available: true }).populate("deliveryQueue");
+        if (!user) {
+            throw new Error("User not found");
+        }
+        return user.deliveryQueue;
+    } catch (error) {
+        console.error("Error in getDeliveryQueue:", error); // Agregar log para depuración
+        throw error;
+    }
+}
 }
 
 
