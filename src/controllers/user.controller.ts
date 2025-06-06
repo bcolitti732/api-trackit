@@ -494,17 +494,17 @@ export async function assignPacketToDelivery(req: Request, res: Response): Promi
 }
 /**
  * @swagger
- * /api/users/{name}/delivery-queue:
+ * /api/users/{id}/delivery-queue:
  *   put:
  *     summary: Replace the delivery queue of a user
  *     tags: [Users]
  *     parameters:
  *       - in: path
- *         name: name
+ *         name: id
  *         schema:
  *           type: string
  *         required: true
- *         description: The user name
+ *         description: The user ID
  *     requestBody:
  *       required: true
  *       content:
@@ -527,7 +527,7 @@ export async function assignPacketToDelivery(req: Request, res: Response): Promi
  */
 export async function updateDeliveryQueue(req: Request, res: Response): Promise<void> {
     try {
-        const userName = req.params.name;
+        const userID = req.params.id;
         const { queue } = req.body;
 
         if (!Array.isArray(queue)) {
@@ -535,7 +535,7 @@ export async function updateDeliveryQueue(req: Request, res: Response): Promise<
             return;
         }
 
-        const updatedUser = await userService.updateDeliveryQueue( userName, queue );
+        const updatedUser = await userService.updateDeliveryQueue( userID, queue );
         if(!updatedUser) {
             res.status(404).json({ message: "User not found" });
             return;
@@ -544,5 +544,6 @@ export async function updateDeliveryQueue(req: Request, res: Response): Promise<
         res.status(200).json({ user: updatedUser, message: "Delivery queue updated successfully" });
     } catch (error) {
         res.status(500).json({ message: "Error updating delivery queue", error });
+        console.log("Error updating delivery queue:", error);
     }
 }

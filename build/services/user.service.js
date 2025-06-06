@@ -169,6 +169,19 @@ class UserService {
             return sortedPackets;
         });
     }
+    updateDeliveryQueue(userID, newQueue) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield user_1.UserModel.findById(userID);
+            if (!user) {
+                throw new Error("User not found");
+            }
+            if (user.deliveryProfile) {
+                user.deliveryProfile.assignedPacket = newQueue;
+            }
+            yield user.save();
+            return user;
+        });
+    }
 }
 exports.UserService = UserService;
 exports.default = new UserService();

@@ -1,6 +1,6 @@
 import { IPacket } from '../models/packet';
 import { IUser, UserModel } from '../models/user';
-import mongoose from 'mongoose';
+import mongoose, { ObjectId } from 'mongoose';
 import { parseCoordinates, haversineDistance, LatLng } from "../utils/geoUtils";
 export class UserService {
  async postUser(user: Partial<IUser>): Promise<IUser> {
@@ -187,30 +187,20 @@ export class UserService {
 
         return sortedPackets;
     }
-   async updateDeliveryQueue(userName: string, newQueue: ObjectId []): Promise<IUser | null> {
-        const user = await UserModel.findOne({ name: userName, available: true });
+   async updateDeliveryQueue(userID: string, newQueue: ObjectId []): Promise<IUser | null> {
+        const user = await UserModel.findById(userID);
         if (!user) {
             throw new Error("User not found");
         }
 
 
-        user.deliveryQueue = newQueue;
+        if (user.deliveryProfile) {
+            user.deliveryProfile.assignedPacket = newQueue;
+        }
         await user.save();
         return user;
     }
     
-    async getDeliveryQueue(userName: string): Promise<IUser["deliveryQueue"] | null> {
-    try {
-        const user = await UserModel.findOne({ name: userName, available: true }).populate("deliveryQueue");
-        if (!user) {
-            throw new Error("User not found");
-        }
-        return user.deliveryQueue;
-    } catch (error) {
-        console.error("Error in getDeliveryQueue:", error); // Agregar log para depuración
-        throw error;
-    }
-}
 }
 
 

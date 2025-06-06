@@ -21,5 +21,6 @@ router.post('/:name/packets', user_controller_1.addPacketToUser);
 router.get('/:id/assignedPackets', user_controller_1.getAssignedPackets);
 router.post('/assign-packet', user_controller_1.assignPacketToDelivery);
 router.get('/:id/optimized-route', user_controller_1.getOptimizedRoute);
+router.put('/:id/delivery-queue', user_controller_1.updateDeliveryQueue);
 exports.default = router;
 //# sourceMappingURL=user.routes.js.map

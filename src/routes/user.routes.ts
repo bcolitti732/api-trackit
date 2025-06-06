@@ -36,7 +36,7 @@ router.post('/:name/packets', addPacketToUser);
 router.get('/:id/assignedPackets', getAssignedPackets);
 router.post('/assign-packet', assignPacketToDelivery);
 router.get('/:id/optimized-route',getOptimizedRoute);
-router.put('/:name/delivery-queue',  updateDeliveryQueue);
+router.put('/:id/delivery-queue',  updateDeliveryQueue);
 
 
 

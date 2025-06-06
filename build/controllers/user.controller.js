@@ -21,6 +21,7 @@ exports.addPacketToUser = addPacketToUser;
 exports.deleteUserById = deleteUserById;
 exports.getAssignedPackets = getAssignedPackets;
 exports.assignPacketToDelivery = assignPacketToDelivery;
+exports.updateDeliveryQueue = updateDeliveryQueue;
 const user_service_1 = require("../services/user.service");
 const userService = new user_service_1.UserService();
 function postUser(req, res) {
@@ -219,6 +220,28 @@ function assignPacketToDelivery(req, res) {
         }
         catch (error) {
             res.status(500).json({ message: "Error assigning packet", error });
+        }
+    });
+}
+function updateDeliveryQueue(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const userID = req.params.id;
+            const { queue } = req.body;
+            if (!Array.isArray(queue)) {
+                res.status(400).json({ message: "Queue must be an array of packet IDs" });
+                return;
+            }
+            const updatedUser = yield userService.updateDeliveryQueue(userID, queue);
+            if (!updatedUser) {
+                res.status(404).json({ message: "User not found" });
+                return;
+            }
+            res.status(200).json({ user: updatedUser, message: "Delivery queue updated successfully" });
+        }
+        catch (error) {
+            res.status(500).json({ message: "Error updating delivery queue", error });
+            console.log("Error updating delivery queue:", error);
         }
     });
 }
