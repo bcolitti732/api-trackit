@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 import { IMessage, MessageModel } from '../models/message';
 import { UserModel, IUser } from '../models/user';
-
 export class MessageService {
     async postMessage(message: Partial<IMessage>): Promise<IMessage> {
         // Verificar que senderId sea un usuario existente
@@ -38,7 +37,26 @@ export class MessageService {
                 { senderId: new mongoose.Types.ObjectId(user1Id), rxId: new mongoose.Types.ObjectId(user2Id) },
                 { senderId: new mongoose.Types.ObjectId(user2Id), rxId: new mongoose.Types.ObjectId(user1Id) }
             ]
-        }).sort({ createdAt: -1 }); // Ordenar por fecha de creación        
+        }).sort({ createdAt: -1 });
+
+        // Actualizar acknowledge a true para los mensajes no reconocidos donde user2 es el receptor
+        const unacknowledgedIds = messages
+            .filter(msg => !msg.acknowledged && msg.rxId.toString() === user1Id)
+            .map(msg => msg._id);
+
+        if (unacknowledgedIds.length > 0) {
+            await MessageModel.updateMany(
+                { _id: { $in: unacknowledgedIds } },
+                { $set: { acknowledged: true } }
+            );
+            // Opcional: actualizar los objetos en memoria para reflejar acknowledged: true
+            messages.forEach(msg => {
+                if (unacknowledgedIds.includes(msg._id)) {
+                    msg.acknowledged = true;
+                }
+            });
+        }
+
         return messages;
     }
     async acknowledgeMessage(messageId: string): Promise<IMessage> {
@@ -119,7 +137,19 @@ async startConversation(user1Id: string, user2Id: string): Promise<IMessage> {
     // Guardar el mensaje en la base de datos
     return await newMessage.save();
 }
-
+async getUnacknowledgedMessagesByUser(email: string): Promise<IMessage[]> {
+    // Buscar el usuario por email
+    const user = await UserModel.findOne({ email });
+    if (!user) {
+        throw new Error("User not found");
+    }
+    const objectId = user._id;
+    // Busca mensajes donde el usuario es receptor y acknowledged es false
+    return await MessageModel.find({
+        rxId: objectId,
+        acknowledged: false
+    }).sort({ created: -1 });
+}
 }
 
 export default new MessageService();

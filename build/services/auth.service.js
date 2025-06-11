@@ -60,8 +60,8 @@ class AuthService {
             if (!isPasswordValid) {
                 throw new Error("Invalid credentials");
             }
-            const accessToken = (0, jwt_handle_1.generateToken)({ name: user.name, role: user.role, id: user._id.toString(), type: "access" }, "access");
-            const refreshToken = (0, jwt_handle_1.generateToken)({ name: user.name, role: user.role, id: user._id.toString(), type: "refresh" }, "refresh");
+            const accessToken = (0, jwt_handle_1.generateToken)({ name: user.name, role: user.role, id: user._id.toString(), email: user.email, type: "access" }, "access");
+            const refreshToken = (0, jwt_handle_1.generateToken)({ name: user.name, role: user.role, id: user._id.toString(), email: user.email, type: "refresh" }, "refresh");
             const isProfileComplete = user.isProfileComplete;
             return {
                 accessToken,
@@ -92,7 +92,7 @@ class AuthService {
             if (!user) {
                 throw new Error("User not found");
             }
-            return (0, jwt_handle_1.generateToken)({ name: user.name, role: user.role, id: user._id.toString(), type: "access" }, "access");
+            return (0, jwt_handle_1.generateToken)({ name: user.name, role: user.role, id: user._id.toString(), email: user.email, type: "access" }, "access");
         });
     }
     completeProfile(userName, phone, birthdate, password) {
@@ -106,8 +106,8 @@ class AuthService {
             user.password = yield (0, bcrypt_handle_1.encrypt)(password);
             user.isProfileComplete = true;
             const updatedUser = yield user.save();
-            const accessToken = (0, jwt_handle_1.generateToken)({ name: user.name, role: user.role, id: user._id.toString(), type: "access" }, "access");
-            const refreshToken = (0, jwt_handle_1.generateToken)({ name: user.name, role: user.role, id: user._id.toString(), type: "refresh" }, "refresh");
+            const accessToken = (0, jwt_handle_1.generateToken)({ name: user.name, role: user.role, id: user._id.toString(), email: user.email, type: "access" }, "access");
+            const refreshToken = (0, jwt_handle_1.generateToken)({ name: user.name, role: user.role, id: user._id.toString(), email: user.email, type: "refresh" }, "refresh");
             return { user: updatedUser, accessToken, refreshToken };
         });
     }
@@ -122,8 +122,8 @@ class AuthService {
                 });
                 yield user.save();
             }
-            const accessToken = (0, jwt_handle_1.generateToken)({ name: user.name, role: user.role, id: user._id.toString(), type: "access" }, "access");
-            const refreshToken = (0, jwt_handle_1.generateToken)({ name: user.name, role: user.role, id: user._id.toString(), type: "refresh" }, "refresh");
+            const accessToken = (0, jwt_handle_1.generateToken)({ name: user.name, role: user.role, id: user._id.toString(), email: user.email, type: "access" }, "access");
+            const refreshToken = (0, jwt_handle_1.generateToken)({ name: user.name, role: user.role, id: user._id.toString(), email: user.email, type: "refresh" }, "refresh");
             return { user, accessToken, refreshToken };
         });
     }

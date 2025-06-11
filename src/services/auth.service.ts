@@ -64,8 +64,8 @@ export class AuthService {
       throw new Error("Invalid credentials");
     }
 
-    const accessToken = generateToken({ name: user.name, role: user.role, id: user._id.toString(), type: "access" }, "access");
-    const refreshToken = generateToken({ name: user.name, role: user.role, id: user._id.toString(), type: "refresh" }, "refresh");
+    const accessToken = generateToken({ name: user.name, role: user.role, id: user._id.toString(), email: user.email, type: "access" }, "access");
+    const refreshToken = generateToken({ name: user.name, role: user.role, id: user._id.toString(),email: user.email, type: "refresh" }, "refresh");
     const isProfileComplete = user.isProfileComplete;
 
     return {
@@ -98,7 +98,7 @@ export class AuthService {
       throw new Error("User not found");
     }
 
-    return generateToken({ name: user.name, role: user.role, id: user._id.toString(), type: "access" }, "access");
+    return generateToken({ name: user.name, role: user.role, id: user._id.toString(),email: user.email, type: "access" }, "access");
   }
 
   async completeProfile(userName: string, phone: string, birthdate: string, password: string): Promise<{ user: IUser, accessToken: string, refreshToken: string }> {
@@ -113,8 +113,8 @@ export class AuthService {
     user.isProfileComplete = true;
     const updatedUser = await user.save();
 
-    const accessToken = generateToken({ name: user.name, role: user.role, id: user._id.toString(), type: "access" }, "access");
-    const refreshToken = generateToken({ name: user.name, role: user.role, id: user._id.toString(), type: "refresh" }, "refresh");
+    const accessToken = generateToken({ name: user.name, role: user.role, id: user._id.toString(),email: user.email, type: "access" }, "access");
+    const refreshToken = generateToken({ name: user.name, role: user.role, id: user._id.toString(),email: user.email, type: "refresh" }, "refresh");
 
     return { user: updatedUser, accessToken, refreshToken };
   }
@@ -132,8 +132,8 @@ export class AuthService {
       await user.save();
     }
 
-    const accessToken = generateToken({ name: user.name, role: user.role, id: user._id.toString(), type: "access" }, "access");
-    const refreshToken = generateToken({ name: user.name, role: user.role, id: user._id.toString(), type: "refresh" }, "refresh");
+    const accessToken = generateToken({ name: user.name, role: user.role, id: user._id.toString(),email: user.email, type: "access" }, "access");
+    const refreshToken = generateToken({ name: user.name, role: user.role, id: user._id.toString(),email: user.email, type: "refresh" }, "refresh");
 
     return { user, accessToken, refreshToken };
   }

@@ -59,8 +59,10 @@ const passport_1 = __importDefault(require("passport"));
 const http = __importStar(require("node:http"));
 const socket_io_1 = require("socket.io");
 const message_1 = require("./models/message");
+const message_service_1 = __importDefault(require("./services/message.service"));
 require("./utils/passport.google");
 const jwt_handle_1 = require("./utils/jwt.handle");
+const user_1 = require("./models/user");
 const app = (0, express_1.default)();
 app.set('port', process.env.PORT || 5000);
 app.use(cors_1.default);
@@ -86,9 +88,9 @@ const chatIO = new socket_io_1.Server(chatServer, {
         credentials: true
     }
 });
-const userSockets = new Map();
-chatIO.on('connection', (socket) => {
-    console.log(`Usuario conectado al chat: ${socket.id}`);
+const usersConnected = {};
+chatIO.on('connection', (socket) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = { email: `Guest_${socket.id}` };
     socket.use(([event, ...args], next) => {
         const token = socket.handshake.auth.token;
         if (!token)
@@ -102,7 +104,6 @@ chatIO.on('connection', (socket) => {
             else {
                 return next(new Error('unauthorized'));
             }
-            userSockets.set(socket.data.userId, socket.id);
             return next();
         }
         catch (err) {
@@ -116,12 +117,41 @@ chatIO.on('connection', (socket) => {
             socket.disconnect();
         }
     });
+    socket.on('email', (email) => __awaiter(void 0, void 0, void 0, function* () {
+        if (email) {
+            user.email = email;
+            usersConnected[socket.id] = user;
+            console.log(`Usuario conectado: ${user.email}`);
+            const unseenMessages = yield message_service_1.default.getUnacknowledgedMessagesByUser(email);
+            if (unseenMessages.length > 0) {
+                socket.emit('unseen_messages', unseenMessages);
+            }
+        }
+    }));
     socket.on('join_room', (roomId) => {
         socket.join(roomId);
         console.log(`Usuario con ID: ${socket.id} se unió a la sala: ${roomId}`);
     });
+    socket.on('messages_seen', () => __awaiter(void 0, void 0, void 0, function* () {
+        if (user.email) {
+            const unseenMessages = yield message_service_1.default.getUnacknowledgedMessagesByUser(user.email);
+            console.log(`Unseen messages for ${user.email}:`, unseenMessages);
+            if (unseenMessages.length > 0) {
+                socket.emit('unseen_messages', unseenMessages);
+            }
+        }
+    }));
+    socket.on('leave_room', (roomId) => {
+        socket.leave(roomId);
+        console.log(`Socket ${socket.id} salió de la sala ${roomId}`);
+    });
     socket.on('send_message', (data) => __awaiter(void 0, void 0, void 0, function* () {
         try {
+            const rxUser = yield user_1.UserModel.findById(data.rxId);
+            if (!rxUser) {
+                socket.emit('error', { message: 'Usuario receptor no encontrado' });
+                return;
+            }
             const newMessage = new message_1.MessageModel({
                 senderId: data.senderId,
                 rxId: data.rxId,
@@ -131,15 +161,42 @@ chatIO.on('connection', (socket) => {
                 acknowledged: false
             });
             yield newMessage.save();
-            socket.to(data.roomId).emit('receive_message', newMessage);
-            console.log(`Mensaje enviado en sala ${data.roomId} por ${data.senderId}: ${data.content}`);
+            const isReceiverConnected = Object.values(usersConnected).some((user) => user.email === rxUser.email);
+            console.log(`isReceiverConnected: ${isReceiverConnected}`);
+            if (!isReceiverConnected) {
+                newMessage.acknowledged = false;
+                yield newMessage.save();
+            }
+            else {
+                if (rxUser.email) {
+                    const socketsInRoom = yield chatIO.in(data.roomId).fetchSockets();
+                    const receiverSocketId = Object.keys(usersConnected).find(key => { var _a; return ((_a = usersConnected[key]) === null || _a === void 0 ? void 0 : _a.email) === rxUser.email; });
+                    if (receiverSocketId) {
+                        chatIO.to(receiverSocketId).emit('receive_message', newMessage);
+                        console.log(`Mensaje enviado en sala ${data.roomId} por ${data.senderId}: ${data.content}`);
+                    }
+                    const isReceiverInRoom = socketsInRoom.some(socket => socket.id === receiverSocketId);
+                    if (!isReceiverInRoom) {
+                        console.log('ENVIANDOOOOOO ', receiverSocketId);
+                        const unseenMessages = yield message_service_1.default.getUnacknowledgedMessagesByUser(rxUser.email);
+                        console.log(`Unseen messages for ${rxUser.email}:`, unseenMessages);
+                        if (unseenMessages.length > 0 && receiverSocketId) {
+                            chatIO.to(receiverSocketId).emit('unseen_messages', unseenMessages);
+                        }
+                    }
+                }
+            }
         }
         catch (error) {
             console.error('Error al guardar el mensaje:', error);
             socket.emit('error', { message: 'Error al guardar el mensaje' });
         }
     }));
-});
+    socket.on('disconnect', (reason) => {
+        console.log(`Client ${socket.id} disconnected: ${reason}`);
+        delete usersConnected[socket.id];
+    });
+}));
 chatServer.listen(CHAT_PORT, () => {
     var _a;
     console.log(`Servidor de chat escuchando en http://localhost:${CHAT_PORT}`);
