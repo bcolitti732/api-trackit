@@ -15,7 +15,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PacketService = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const packet_1 = require("../models/packet");
+const user_1 = require("../models/user");
 class PacketService {
+    getUserByPacketId(packetId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield user_1.UserModel.findOne({ packets: packetId });
+            return user;
+        });
+    }
     postPacket(packet) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!packet.deliveryId || !mongoose_1.default.Types.ObjectId.isValid(packet.deliveryId.toString())) {

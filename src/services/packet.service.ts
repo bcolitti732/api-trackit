@@ -1,7 +1,15 @@
 import mongoose from 'mongoose';
 import { IPacket, PacketModel } from '../models/packet';
+import { UserModel } from '../models/user';
 
 export class PacketService {
+
+    async getUserByPacketId(packetId: string) {
+        // Busca el usuario que tenga este paquete en su array de packets
+        const user = await UserModel.findOne({ packets: packetId });
+        return user;
+    }
+
     async postPacket(packet: Partial<IPacket>): Promise<IPacket> {
     if (!packet.deliveryId || !mongoose.Types.ObjectId.isValid(packet.deliveryId.toString())) {
         delete packet.deliveryId;

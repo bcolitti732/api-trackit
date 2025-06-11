@@ -106,12 +106,26 @@ chatIO.on('connection', async (socket) => {
      * Maneja el registro del nombre de usuario
      * @param name Nombre elegido por el usuario
      */
-    socket.on('email', async (email) => {
+    socket.on('email', async (email, role) => {
         if(email){
             user.email = email;
             usersConnected[socket.id] = user;
             console.log(`Usuario conectado: ${user.email}`);
             const unseenMessages: IMessage[] = await messageService.getUnacknowledgedMessagesByUser(email);
+                        console.log(`Unseen messages for ${user.email}:`, unseenMessages);
+            console.log(role);
+            if(role === 'user'){
+                const filteredMessages = unseenMessages.filter(
+                    msg => typeof msg.content === 'string' &&
+                            msg.content.startsWith('***********') &&
+                            msg.content.endsWith('***********')
+                );
+                console.log(`Filtered messages for ${user.email}:`, filteredMessages);
+                if(filteredMessages.length > 0) {   
+                    console.log("enviando packet_assigned a ", user.email);             
+                    chatIO.emit('packet_assigned');
+                }
+           }
             if(unseenMessages.length > 0) {
                 socket.emit('unseen_messages', unseenMessages);
             }
@@ -126,8 +140,7 @@ chatIO.on('connection', async (socket) => {
     });
     socket.on('messages_seen', async () => {
         if(user.email){
-            const unseenMessages: IMessage[] = await messageService.getUnacknowledgedMessagesByUser(user.email);            
-            console.log(`Unseen messages for ${user.email}:`, unseenMessages);
+            const unseenMessages: IMessage[] = await messageService.getUnacknowledgedMessagesByUser(user.email);                        
             if(unseenMessages.length > 0) {
                 socket.emit('unseen_messages', unseenMessages);
             }
@@ -177,7 +190,8 @@ chatIO.on('connection', async (socket) => {
                     );   
 
                     if (receiverSocketId) {
-                        chatIO.to(receiverSocketId).emit('receive_message', newMessage);
+                        socket.to(data.roomId).emit('receive_message', newMessage);
+                        //chatIO.to(receiverSocketId).emit('receive_message', newMessage);
                           console.log(`Mensaje enviado en sala ${data.roomId} por ${data.senderId}: ${data.content}`);
                     }                
                     // socketsInRoom es un array de sockets, cada uno tiene una propiedad id
@@ -201,7 +215,30 @@ chatIO.on('connection', async (socket) => {
             socket.emit('error', { message: 'Error al guardar el mensaje' });
         }
     });
-
+    socket.on('packetAssigned', async (packet, client) => {        
+        const delivery = await UserModel.findOne({ email: user.email });
+        if (!delivery) {
+            console.error('No se encontró el usuario de entrega');
+            return;
+        }
+        const roomId = [delivery._id, client.id].sort().join('_'); // Ordenar para que sea consistente    
+        const newMessage = new MessageModel({
+            senderId: delivery._id,
+            rxId: client.id,
+            roomId: roomId,
+            content: `*********** Paquete ${packet.name} en reparto ***********`,
+            created: new Date(), // Asegúrate de incluir el campo `created`
+            acknowledged: false
+        });
+        await newMessage.save();
+        // Aquí puedes actualizar la UI, mostrar una notificación, etc.
+        const receiverSocketId = Object.keys(usersConnected).find(
+                key => usersConnected[key]?.email === client.email
+        );  
+        if (receiverSocketId) {            
+            chatIO.to(receiverSocketId).emit('packet_assigned');
+        }
+    });
         /**
      * Se ejecuta justo despues de la desconexión de un usuario
      * @param reason Motivo de la desconexión

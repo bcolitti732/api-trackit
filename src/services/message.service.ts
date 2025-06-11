@@ -110,20 +110,22 @@ export class MessageService {
 }
 async startConversation(user1Id: string, user2Id: string): Promise<IMessage> {
     // Verificar que ambos usuarios existan
+
     const user1Exists = await UserModel.findById(user1Id);
     if (!user1Exists) {
         throw new Error('User 1 does not exist');
-    }
-    console.log('user1Exists', user1Exists);
+    }    
 
     const user2Exists = await UserModel.findById(user2Id);
     if (!user2Exists) {
         throw new Error('User 2 does not exist');
-    }
-    console.log('user2Exists', user2Exists);
+    }    
     // Generar un roomId único basado en los IDs de los usuarios
-    const roomId = [user1Id, user2Id].sort().join('_'); // Ordenar para que sea consistente
-    console.log('roomId', roomId);
+    const roomId = [user1Id, user2Id].sort().join('_'); // Ordenar para que sea consistente    
+    const existing = await MessageModel.findOne({ roomId });
+    if (existing) {
+        return existing;
+    }
     // Crear un mensaje vacío con el roomId
     const newMessage = new MessageModel({
         senderId: user1Id,
@@ -131,9 +133,7 @@ async startConversation(user1Id: string, user2Id: string): Promise<IMessage> {
         roomId, // Identificador único de la conversación
         created: new Date(),
         acknowledged: false
-    });
-    console.log('newMessage', newMessage);
-
+    });    
     // Guardar el mensaje en la base de datos
     return await newMessage.save();
 }

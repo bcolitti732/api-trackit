@@ -117,12 +117,24 @@ chatIO.on('connection', (socket) => __awaiter(void 0, void 0, void 0, function* 
             socket.disconnect();
         }
     });
-    socket.on('email', (email) => __awaiter(void 0, void 0, void 0, function* () {
+    socket.on('email', (email, role) => __awaiter(void 0, void 0, void 0, function* () {
         if (email) {
             user.email = email;
             usersConnected[socket.id] = user;
             console.log(`Usuario conectado: ${user.email}`);
             const unseenMessages = yield message_service_1.default.getUnacknowledgedMessagesByUser(email);
+            console.log(`Unseen messages for ${user.email}:`, unseenMessages);
+            console.log(role);
+            if (role === 'user') {
+                const filteredMessages = unseenMessages.filter(msg => typeof msg.content === 'string' &&
+                    msg.content.startsWith('***********') &&
+                    msg.content.endsWith('***********'));
+                console.log(`Filtered messages for ${user.email}:`, filteredMessages);
+                if (filteredMessages.length > 0) {
+                    console.log("enviando packet_assigned a ", user.email);
+                    chatIO.emit('packet_assigned');
+                }
+            }
             if (unseenMessages.length > 0) {
                 socket.emit('unseen_messages', unseenMessages);
             }
@@ -135,7 +147,6 @@ chatIO.on('connection', (socket) => __awaiter(void 0, void 0, void 0, function* 
     socket.on('messages_seen', () => __awaiter(void 0, void 0, void 0, function* () {
         if (user.email) {
             const unseenMessages = yield message_service_1.default.getUnacknowledgedMessagesByUser(user.email);
-            console.log(`Unseen messages for ${user.email}:`, unseenMessages);
             if (unseenMessages.length > 0) {
                 socket.emit('unseen_messages', unseenMessages);
             }
@@ -172,7 +183,7 @@ chatIO.on('connection', (socket) => __awaiter(void 0, void 0, void 0, function* 
                     const socketsInRoom = yield chatIO.in(data.roomId).fetchSockets();
                     const receiverSocketId = Object.keys(usersConnected).find(key => { var _a; return ((_a = usersConnected[key]) === null || _a === void 0 ? void 0 : _a.email) === rxUser.email; });
                     if (receiverSocketId) {
-                        chatIO.to(receiverSocketId).emit('receive_message', newMessage);
+                        socket.to(data.roomId).emit('receive_message', newMessage);
                         console.log(`Mensaje enviado en sala ${data.roomId} por ${data.senderId}: ${data.content}`);
                     }
                     const isReceiverInRoom = socketsInRoom.some(socket => socket.id === receiverSocketId);
@@ -190,6 +201,27 @@ chatIO.on('connection', (socket) => __awaiter(void 0, void 0, void 0, function* 
         catch (error) {
             console.error('Error al guardar el mensaje:', error);
             socket.emit('error', { message: 'Error al guardar el mensaje' });
+        }
+    }));
+    socket.on('packetAssigned', (packet, client) => __awaiter(void 0, void 0, void 0, function* () {
+        const delivery = yield user_1.UserModel.findOne({ email: user.email });
+        if (!delivery) {
+            console.error('No se encontró el usuario de entrega');
+            return;
+        }
+        const roomId = [delivery._id, client.id].sort().join('_');
+        const newMessage = new message_1.MessageModel({
+            senderId: delivery._id,
+            rxId: client.id,
+            roomId: roomId,
+            content: `*********** Paquete ${packet.name} en reparto ***********`,
+            created: new Date(),
+            acknowledged: false
+        });
+        yield newMessage.save();
+        const receiverSocketId = Object.keys(usersConnected).find(key => { var _a; return ((_a = usersConnected[key]) === null || _a === void 0 ? void 0 : _a.email) === client.email; });
+        if (receiverSocketId) {
+            chatIO.to(receiverSocketId).emit('packet_assigned');
         }
     }));
     socket.on('disconnect', (reason) => {

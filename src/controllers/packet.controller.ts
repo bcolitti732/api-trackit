@@ -171,3 +171,42 @@ export async function deletePacketById(req: Request, res: Response): Promise<voi
         res.status(400).json({ message: "Error deleting packet", error });
     }
 }
+
+/**
+ * @swagger
+ * /api/packets/{id}/user:
+ *   get:
+ *     summary: Get the user who owns a packet by packet ID
+ *     tags: [Packets]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The packet ID
+ *     responses:
+ *       200:
+ *         description: The user who owns the packet
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       404:
+ *         description: User not found for this packet
+ *       400:
+ *         description: Error getting user by packet
+ */
+export async function getUserByPacketId(req: Request, res: Response): Promise<void> {
+    try {
+        const packetId = req.params.id;
+        const user = await packetService.getUserByPacketId(packetId);
+        if (!user) {
+            res.status(404).json({ message: "User not found for this packet" });
+            return;
+        }
+        res.status(200).json(user);
+    } catch (error) {
+        res.status(400).json({ message: "Error getting user by packet", error });
+    }
+}
