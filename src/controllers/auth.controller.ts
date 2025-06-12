@@ -13,6 +13,7 @@ export async function register(req: Request, res: Response): Promise<void> {
     res.status(201).json(newUser);
   } catch (error) {
     res.status(400).json({ message: (error as Error).message });
+    console.error("Registration error:", error);
   }
 }
 

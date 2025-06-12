@@ -10,7 +10,6 @@ import packetRoutes from './routes/packet.routes';
 import authRoutes from './routes/auth.routes';
 import messageRoutes from './routes/message.routes';
 import passport from 'passport';
-
 import { createServer } from 'node:http';
 import * as http from 'node:http';
 import { Server, Socket } from 'socket.io';

@@ -4,57 +4,57 @@ import { generateToken, verifyToken } from "../utils/jwt.handle";
 
 export class AuthService {
   async register(user: Partial<IUser>): Promise<IUser> {
-  const { email, password, name, phone, available, packets, birthdate, role, deliveryProfile } = user;
+    const { email, password, name, phone, available, packets, birthdate, role, deliveryProfile, location } = user;
 
-  const existingUser = await UserModel.findOne({ email });
-  if (existingUser) {
-    throw new Error("User already exists");
-  }
-
-  const hashedPassword = await encrypt(password!);
-
-  // Validación y normalización del deliveryProfile
-  let deliveryProfileCleaned = deliveryProfile;
-  if (deliveryProfile) {
-    const { assignedPacket, deliveredPackets, vehicle } = deliveryProfile;
-
-    // Validar tipos
-    if (
-      (assignedPacket && !Array.isArray(assignedPacket)) ||
-      (deliveredPackets && !Array.isArray(deliveredPackets)) ||
-      (vehicle && typeof vehicle !== 'string')
-    ) {
-      throw new Error("Invalid deliveryProfile format.");
+    const existingUser = await UserModel.findOne({ email });
+    if (existingUser) {
+      throw new Error("User already exists");
     }
 
-    // Asignar valores por defecto si faltan
-    deliveryProfileCleaned = {
-      assignedPacket: assignedPacket ?? [],
-      deliveredPackets: deliveredPackets ?? [],
-      vehicle: vehicle || 'N/A', // o '' si prefieres cadena vacía pero forzada
-    };
+    const hashedPassword = await encrypt(password!);
+
+    // Validación y normalización del deliveryProfile
+    let deliveryProfileCleaned = deliveryProfile;
+    if (deliveryProfile) {
+      const { assignedPacket, deliveredPackets, vehicle } = deliveryProfile;
+
+      // Validar tipos
+      if (
+        (assignedPacket && !Array.isArray(assignedPacket)) ||
+        (deliveredPackets && !Array.isArray(deliveredPackets)) ||
+        (vehicle && typeof vehicle !== 'string')
+      ) {
+        throw new Error("Invalid deliveryProfile format.");
+      }
+
+      // Asignar valores por defecto si faltan
+      deliveryProfileCleaned = {
+        assignedPacket: assignedPacket ?? [],
+        deliveredPackets: deliveredPackets ?? [],
+        vehicle: vehicle || 'N/A',
+      };
+    }
+
+    // Asignar ubicación por defecto si no se proporciona
+    const userLocation = location || "41.27721, 1.99017";
+
+    const newUser = new UserModel({
+      email,
+      password: hashedPassword,
+      name,
+      phone,
+      available,
+      packets,
+      birthdate,
+      role,
+      deliveryProfile: deliveryProfileCleaned,
+      location: userLocation, // Asignar ubicación
+    });
+    return await newUser.save();
   }
- 
 
-
-  const newUser = new UserModel({
-    email,
-    password: hashedPassword,
-    name,
-    phone,
-    available,
-    packets,
-    birthdate,
-    role,
-    deliveryProfile: deliveryProfileCleaned,
-  });
-
-  return await newUser.save();
-}
-
-
-  async login(email: string, password: string): Promise<{ accessToken: string; refreshToken: string; isProfileComplete: boolean, user: IUser }> {
-    const user = await UserModel.findOne({ email }).populate('packets'); 
+  async login(email: string, password: string): Promise<{ accessToken: string; refreshToken: string; isProfileComplete: boolean; user: IUser }> {
+    const user = await UserModel.findOne({ email }).populate('packets');
     if (!user) {
       throw new Error("User not found");
     }
@@ -79,9 +79,10 @@ export class AuthService {
         password: user.password,
         available: user.available,
         role: user.role,
-        deliveryProfile: user.deliveryProfile,  // <== Cambiado deliveryProfileId por deliveryProfile
+        deliveryProfile: user.deliveryProfile,
         isProfileComplete: user.isProfileComplete,
         packets: user.packets,
+        location: user.location, // Incluir ubicación en la respuesta
       },
       isProfileComplete,
     };
@@ -101,7 +102,7 @@ export class AuthService {
     return generateToken({ name: user.name, role: user.role, id: user._id.toString(),email: user.email, type: "access" }, "access");
   }
 
-  async completeProfile(userName: string, phone: string, birthdate: string, password: string): Promise<{ user: IUser, accessToken: string, refreshToken: string }> {
+  async completeProfile(userName: string, phone: string, birthdate: string, password: string, location?: string): Promise<{ user: IUser; accessToken: string; refreshToken: string }> {
     const user = await UserModel.findOne({ name: userName });
     if (!user) {
       throw new Error("User not found");
@@ -111,6 +112,12 @@ export class AuthService {
     user.birthdate = new Date(birthdate);
     user.password = await encrypt(password);
     user.isProfileComplete = true;
+
+    // Actualizar ubicación si se proporciona
+    if (location) {
+      user.location = location;
+    }
+
     const updatedUser = await user.save();
 
     const accessToken = generateToken({ name: user.name, role: user.role, id: user._id.toString(),email: user.email, type: "access" }, "access");
@@ -119,7 +126,7 @@ export class AuthService {
     return { user: updatedUser, accessToken, refreshToken };
   }
 
-  async loginOrRegisterGoogleUser(email: string, name?: string): Promise<{ user: IUser, accessToken: string, refreshToken: string }> {
+  async loginOrRegisterGoogleUser(email: string, name?: string, location?: string): Promise<{ user: IUser; accessToken: string; refreshToken: string }> {
     let user = await UserModel.findOne({ email });
 
     if (!user) {
@@ -127,6 +134,7 @@ export class AuthService {
         email,
         name: name || email.split("@")[0],
         isProfileComplete: false,
+        location: location || "41.27721, 1.99017", // Asignar ubicación por defecto
       });
 
       await user.save();
