@@ -28,6 +28,7 @@ const userSchema = new mongoose_1.Schema({
         deliveredPackets: [{ type: mongoose_1.Schema.Types.ObjectId, ref: "Packet" }],
         vehicle: { type: String },
     },
+    location: { type: String, defualt: "41.27721, 1.99017" },
 });
 userSchema.set("toJSON", {
     transform: (doc, ret) => {

@@ -14,6 +14,7 @@ export interface IUser {
     deliveredPackets: ObjectId[];
     vehicle: string;
   };
+  location?: string;
 }
 
 
@@ -43,6 +44,7 @@ const userSchema = new Schema<IUser>({
     deliveredPackets: [{ type: Schema.Types.ObjectId, ref: "Packet" }],
     vehicle: { type: String },
   },
+  location: { type: String, defualt: "41.27721, 1.99017"},
 });
 
 userSchema.set("toJSON", {

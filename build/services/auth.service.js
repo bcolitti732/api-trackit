@@ -16,7 +16,7 @@ const jwt_handle_1 = require("../utils/jwt.handle");
 class AuthService {
     register(user) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { email, password, name, phone, available, packets, birthdate, role, deliveryProfile } = user;
+            const { email, password, name, phone, available, packets, birthdate, role, deliveryProfile, location } = user;
             const existingUser = yield user_1.UserModel.findOne({ email });
             if (existingUser) {
                 throw new Error("User already exists");
@@ -36,6 +36,7 @@ class AuthService {
                     vehicle: vehicle || 'N/A',
                 };
             }
+            const userLocation = location || "41.27721, 1.99017";
             const newUser = new user_1.UserModel({
                 email,
                 password: hashedPassword,
@@ -46,6 +47,7 @@ class AuthService {
                 birthdate,
                 role,
                 deliveryProfile: deliveryProfileCleaned,
+                location: userLocation,
             });
             return yield newUser.save();
         });
@@ -77,6 +79,7 @@ class AuthService {
                     deliveryProfile: user.deliveryProfile,
                     isProfileComplete: user.isProfileComplete,
                     packets: user.packets,
+                    location: user.location,
                 },
                 isProfileComplete,
             };
@@ -95,7 +98,7 @@ class AuthService {
             return (0, jwt_handle_1.generateToken)({ name: user.name, role: user.role, id: user._id.toString(), type: "access" }, "access");
         });
     }
-    completeProfile(userName, phone, birthdate, password) {
+    completeProfile(userName, phone, birthdate, password, location) {
         return __awaiter(this, void 0, void 0, function* () {
             const user = yield user_1.UserModel.findOne({ name: userName });
             if (!user) {
@@ -105,13 +108,16 @@ class AuthService {
             user.birthdate = new Date(birthdate);
             user.password = yield (0, bcrypt_handle_1.encrypt)(password);
             user.isProfileComplete = true;
+            if (location) {
+                user.location = location;
+            }
             const updatedUser = yield user.save();
             const accessToken = (0, jwt_handle_1.generateToken)({ name: user.name, role: user.role, id: user._id.toString(), type: "access" }, "access");
             const refreshToken = (0, jwt_handle_1.generateToken)({ name: user.name, role: user.role, id: user._id.toString(), type: "refresh" }, "refresh");
             return { user: updatedUser, accessToken, refreshToken };
         });
     }
-    loginOrRegisterGoogleUser(email, name) {
+    loginOrRegisterGoogleUser(email, name, location) {
         return __awaiter(this, void 0, void 0, function* () {
             let user = yield user_1.UserModel.findOne({ email });
             if (!user) {
@@ -119,6 +125,7 @@ class AuthService {
                     email,
                     name: name || email.split("@")[0],
                     isProfileComplete: false,
+                    location: location || "41.27721, 1.99017",
                 });
                 yield user.save();
             }
