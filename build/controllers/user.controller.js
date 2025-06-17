@@ -22,6 +22,7 @@ exports.deleteUserById = deleteUserById;
 exports.getAssignedPackets = getAssignedPackets;
 exports.assignPacketToDelivery = assignPacketToDelivery;
 exports.updateDeliveryQueue = updateDeliveryQueue;
+exports.markPacketDeliveredHandler = markPacketDeliveredHandler;
 const user_service_1 = require("../services/user.service");
 const userService = new user_service_1.UserService();
 function postUser(req, res) {
@@ -242,6 +243,26 @@ function updateDeliveryQueue(req, res) {
         catch (error) {
             res.status(500).json({ message: "Error updating delivery queue", error });
             console.log("Error updating delivery queue:", error);
+        }
+    });
+}
+function markPacketDeliveredHandler(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const userId = req.params.id;
+        const packetId = req.body.packetId;
+        console.log('userId param:', userId);
+        console.log('packetId body:', packetId);
+        try {
+            const updatedUser = yield userService.markPacketAsDelivered(userId, packetId);
+            if (!updatedUser) {
+                res.status(404).json({ message: "User not found or invalid user" });
+                return;
+            }
+            res.status(200).json({ message: "Packet marked as delivered", user: updatedUser });
+        }
+        catch (error) {
+            console.error(error);
+            res.status(500).json({ message: error.message || "Internal server error" });
         }
     });
 }

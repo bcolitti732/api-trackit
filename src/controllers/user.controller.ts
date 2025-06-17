@@ -547,3 +547,57 @@ export async function updateDeliveryQueue(req: Request, res: Response): Promise<
         console.log("Error updating delivery queue:", error);
     }
 }
+/**
+ * @swagger
+ * /api/users/{id}/mark-delivered:
+ *   put:
+ *     summary: Mark a packet as delivered for a user
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the delivery user
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               packetId:
+ *                 type: string
+ *                 description: The ID of the packet to mark as delivered
+ *             required:
+ *               - packetId
+ *     responses:
+ *       200:
+ *         description: Packet marked as delivered successfully
+ *       400:
+ *         description: Invalid input
+ *       404:
+ *         description: User or packet not found
+ *       500:
+ *         description: Internal server error
+ */
+export async function markPacketDeliveredHandler(req: Request, res: Response): Promise<void> {
+  const userId = req.params.id;            // El id viene del path param 'id'
+  const packetId = req.body.packetId;      // packetId viene del body
+
+  console.log('userId param:', userId);
+  console.log('packetId body:', packetId);
+
+  try {
+    const updatedUser = await userService.markPacketAsDelivered(userId, packetId);
+    if (!updatedUser) {
+      res.status(404).json({ message: "User not found or invalid user" });
+      return;
+    }
+    res.status(200).json({ message: "Packet marked as delivered", user: updatedUser });
+  } catch (error: any) {
+    console.error(error);
+    res.status(500).json({ message: error.message || "Internal server error" });
+  }
+}

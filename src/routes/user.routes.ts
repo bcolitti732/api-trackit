@@ -15,7 +15,8 @@ import {
     getAssignedPackets,
     assignPacketToDelivery,
     getOptimizedRoute,
-    updateDeliveryQueue, // Importamos la función del controlador
+    updateDeliveryQueue,
+    markPacketDeliveredHandler,
 } from '../controllers/user.controller';
 import { authMiddleware } from '../middlewares/auth.middleware';
 import { auth } from 'google-auth-library';
@@ -37,6 +38,8 @@ router.get('/:id/assignedPackets', getAssignedPackets);
 router.post('/assign-packet', assignPacketToDelivery);
 router.get('/:id/optimized-route',getOptimizedRoute);
 router.put('/:id/delivery-queue',  updateDeliveryQueue);
+router.put('/:id/mark-delivered', markPacketDeliveredHandler);
+
 
 
 

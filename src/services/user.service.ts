@@ -200,7 +200,42 @@ export class UserService {
         await user.save();
         return user;
     }
+    async markPacketAsDelivered(userId: string, packetId: string): Promise<IUser | null> {
     
+        console.log('ID recibido:', userId);
+  console.log('¿ID válido?', mongoose.Types.ObjectId.isValid(userId));
+  if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(packetId)) {
+    throw new Error("Invalid userId or packetId.");
+  }
+
+  const user = await UserModel.findById(userId);
+  console.log('Usuario encontrado:', user);
+  if (!user || user.role !== 'delivery') {
+    throw new Error("Delivery user not found or user is not a delivery.");
+  }
+ 
+  
+  if (!user || user.role !== 'delivery') {
+    throw new Error("Delivery user not found or user is not a delivery.");
+  }
+
+  if (!user.deliveryProfile) {
+    throw new Error("User deliveryProfile not found.");
+  }
+
+  // Eliminar packetId de assignedPacket si está ahí
+  user.deliveryProfile.assignedPacket = user.deliveryProfile.assignedPacket.filter(
+    (id) => id.toString() !== packetId
+  );
+
+  // Añadir packetId a deliveredPackets si no está ya
+  if (!user.deliveryProfile.deliveredPackets.includes(packetId as any)) {
+    user.deliveryProfile.deliveredPackets.push(packetId as any);
+  }
+
+  return await user.save();
+}
+
 }
 
 

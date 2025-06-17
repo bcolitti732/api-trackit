@@ -182,6 +182,31 @@ class UserService {
             return user;
         });
     }
+    markPacketAsDelivered(userId, packetId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log('ID recibido:', userId);
+            console.log('¿ID válido?', mongoose_1.default.Types.ObjectId.isValid(userId));
+            if (!mongoose_1.default.Types.ObjectId.isValid(userId) || !mongoose_1.default.Types.ObjectId.isValid(packetId)) {
+                throw new Error("Invalid userId or packetId.");
+            }
+            const user = yield user_1.UserModel.findById(userId);
+            console.log('Usuario encontrado:', user);
+            if (!user || user.role !== 'delivery') {
+                throw new Error("Delivery user not found or user is not a delivery.");
+            }
+            if (!user || user.role !== 'delivery') {
+                throw new Error("Delivery user not found or user is not a delivery.");
+            }
+            if (!user.deliveryProfile) {
+                throw new Error("User deliveryProfile not found.");
+            }
+            user.deliveryProfile.assignedPacket = user.deliveryProfile.assignedPacket.filter((id) => id.toString() !== packetId);
+            if (!user.deliveryProfile.deliveredPackets.includes(packetId)) {
+                user.deliveryProfile.deliveredPackets.push(packetId);
+            }
+            return yield user.save();
+        });
+    }
 }
 exports.UserService = UserService;
 exports.default = new UserService();
