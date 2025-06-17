@@ -130,6 +130,13 @@ chatIO.on('connection', (socket) => __awaiter(void 0, void 0, void 0, function* 
                 const filteredMessages = unseenMessages.filter(msg => typeof msg.content === 'string' &&
                     msg.content.startsWith('***********') &&
                     msg.content.endsWith('***********'));
+                const filteredDeliverMessages = unseenMessages.filter(msg => typeof msg.content === 'string' &&
+                    msg.content.startsWith('^^^^^^^^^^^^^^') &&
+                    msg.content.endsWith('^^^^^^^^^^^^^^'));
+                if (filteredDeliverMessages.length > 0) {
+                    console.log("enviando packet_delivered a ", user.email);
+                    chatIO.emit('packet_delivered');
+                }
                 console.log(`Filtered messages for ${user.email}:`, filteredMessages);
                 if (filteredMessages.length > 0) {
                     console.log("enviando packet_assigned a ", user.email);
@@ -210,9 +217,11 @@ chatIO.on('connection', (socket) => __awaiter(void 0, void 0, void 0, function* 
             console.error('No se encontró el usuario de entrega');
             return;
         }
-        if (!delivery._id || !client.id) {
-            console.error('Missing required IDs to generate roomId');
-            return;
+        if (!delivery._id) {
+            throw new Error('Missing delivery IDs to generate roomId');
+        }
+        else if (!client.id) {
+            throw new Error('Missing user IDs to generate roomId');
         }
         const roomId = [delivery._id, client.id].sort().join('_');
         const newMessage = new message_1.MessageModel({
@@ -235,15 +244,18 @@ chatIO.on('connection', (socket) => __awaiter(void 0, void 0, void 0, function* 
             console.error('No se encontró el usuario de entrega');
             return;
         }
-        if (!delivery._id || !client.id) {
-            throw new Error('Missing required IDs to generate roomId');
+        if (!delivery._id) {
+            throw new Error('Missing delivery IDs to generate roomId');
+        }
+        else if (!client.id) {
+            throw new Error('Missing user IDs to generate roomId');
         }
         const roomId = [delivery._id, client.id].sort().join('_');
         const newMessage = new message_1.MessageModel({
             senderId: delivery._id,
             rxId: client.id,
             roomId: roomId,
-            content: `*********** Paquete ${packet.name} entregado ***********`,
+            content: `^^^^^^^^^^^^^^ Paquete ${packet.name} entregado ^^^^^^^^^^^^^^`,
             created: new Date(),
             acknowledged: false
         });
