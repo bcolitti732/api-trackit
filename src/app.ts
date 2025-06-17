@@ -10,6 +10,7 @@ import packetRoutes from './routes/packet.routes';
 import authRoutes from './routes/auth.routes';
 import messageRoutes from './routes/message.routes';
 import passport from 'passport';
+
 import { createServer } from 'node:http';
 import * as http from 'node:http';
 import { Server, Socket } from 'socket.io';
@@ -72,6 +73,7 @@ const usersConnected: { [key: string]: Partial<IUser> } = {};
 
 // Manejar conexiones de Socket.IO para el chat
 chatIO.on('connection', async (socket) => {    
+    console.log(`Nuevo cliente conectado: ${socket.id}`);
     const user: Partial<IUser> = {email: `Guest_${socket.id}`};
     // Verificación JWT para el socket principal
     socket.use(([event, ...args], next) => {
@@ -236,6 +238,31 @@ chatIO.on('connection', async (socket) => {
         );  
         if (receiverSocketId) {            
             chatIO.to(receiverSocketId).emit('packet_assigned');
+        }
+    });
+
+    socket.on('packetDelivered', async (packet, client) => {        
+        const delivery = await UserModel.findOne({ email: user.email });
+        if (!delivery) {
+            console.error('No se encontró el usuario de entrega');
+            return;
+        }
+        const roomId = [delivery._id, client.id].sort().join('_'); // Ordenar para que sea consistente    
+        const newMessage = new MessageModel({
+            senderId: delivery._id,
+            rxId: client.id,
+            roomId: roomId,
+            content: `*********** Paquete ${packet.name} entregado ***********`,
+            created: new Date(), // Asegúrate de incluir el campo `created`
+            acknowledged: false
+        });
+        await newMessage.save();
+        // Aquí puedes actualizar la UI, mostrar una notificación, etc.
+        const receiverSocketId = Object.keys(usersConnected).find(
+                key => usersConnected[key]?.email === client.email
+        );  
+        if (receiverSocketId) {            
+            chatIO.to(receiverSocketId).emit('packet_delivered');
         }
     });
         /**
