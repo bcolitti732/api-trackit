@@ -90,6 +90,7 @@ const chatIO = new socket_io_1.Server(chatServer, {
 });
 const usersConnected = {};
 chatIO.on('connection', (socket) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log(`Nuevo cliente conectado: ${socket.id}`);
     const user = { email: `Guest_${socket.id}` };
     socket.use(([event, ...args], next) => {
         const token = socket.handshake.auth.token;
@@ -222,6 +223,27 @@ chatIO.on('connection', (socket) => __awaiter(void 0, void 0, void 0, function* 
         const receiverSocketId = Object.keys(usersConnected).find(key => { var _a; return ((_a = usersConnected[key]) === null || _a === void 0 ? void 0 : _a.email) === client.email; });
         if (receiverSocketId) {
             chatIO.to(receiverSocketId).emit('packet_assigned');
+        }
+    }));
+    socket.on('packetDelivered', (packet, client) => __awaiter(void 0, void 0, void 0, function* () {
+        const delivery = yield user_1.UserModel.findOne({ email: user.email });
+        if (!delivery) {
+            console.error('No se encontró el usuario de entrega');
+            return;
+        }
+        const roomId = [delivery._id, client.id].sort().join('_');
+        const newMessage = new message_1.MessageModel({
+            senderId: delivery._id,
+            rxId: client.id,
+            roomId: roomId,
+            content: `*********** Paquete ${packet.name} entregado ***********`,
+            created: new Date(),
+            acknowledged: false
+        });
+        yield newMessage.save();
+        const receiverSocketId = Object.keys(usersConnected).find(key => { var _a; return ((_a = usersConnected[key]) === null || _a === void 0 ? void 0 : _a.email) === client.email; });
+        if (receiverSocketId) {
+            chatIO.to(receiverSocketId).emit('packet_delivered');
         }
     }));
     socket.on('disconnect', (reason) => {

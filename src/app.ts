@@ -108,26 +108,29 @@ chatIO.on('connection', async (socket) => {
      * @param name Nombre elegido por el usuario
      */
     socket.on('email', async (email, role) => {
-        if(email){
+        if (email) {
             user.email = email;
             usersConnected[socket.id] = user;
             console.log(`Usuario conectado: ${user.email}`);
+            
+            // Correctly call the method using the messageService instance
             const unseenMessages: IMessage[] = await messageService.getUnacknowledgedMessagesByUser(email);
-                        console.log(`Unseen messages for ${user.email}:`, unseenMessages);
+            console.log(`Unseen messages for ${user.email}:`, unseenMessages);
+            
             console.log(role);
-            if(role === 'user'){
+            if (role === 'user') {
                 const filteredMessages = unseenMessages.filter(
                     msg => typeof msg.content === 'string' &&
                             msg.content.startsWith('***********') &&
                             msg.content.endsWith('***********')
                 );
                 console.log(`Filtered messages for ${user.email}:`, filteredMessages);
-                if(filteredMessages.length > 0) {   
+                if (filteredMessages.length > 0) {   
                     console.log("enviando packet_assigned a ", user.email);             
                     chatIO.emit('packet_assigned');
                 }
-           }
-            if(unseenMessages.length > 0) {
+            }
+            if (unseenMessages.length > 0) {
                 socket.emit('unseen_messages', unseenMessages);
             }
         }
