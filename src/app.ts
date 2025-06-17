@@ -225,19 +225,22 @@ chatIO.on('connection', async (socket) => {
             console.error('No se encontró el usuario de entrega');
             return;
         }
-        const roomId = [delivery._id, client.id].sort().join('_'); // Ordenar para que sea consistente    
+        if (!delivery._id || !client.id) {
+            console.error('Missing required IDs to generate roomId');
+            return;
+        }
+        const roomId = [delivery._id, client.id].sort().join('_'); // Generate a consistent roomId
         const newMessage = new MessageModel({
             senderId: delivery._id,
             rxId: client.id,
-            roomId: roomId,
+            roomId: roomId, // Ensure `roomId` is included
             content: `*********** Paquete ${packet.name} en reparto ***********`,
-            created: new Date(), // Asegúrate de incluir el campo `created`
+            created: new Date(),
             acknowledged: false
         });
         await newMessage.save();
-        // Aquí puedes actualizar la UI, mostrar una notificación, etc.
         const receiverSocketId = Object.keys(usersConnected).find(
-                key => usersConnected[key]?.email === client.email
+            key => usersConnected[key]?.email === client.email
         );  
         if (receiverSocketId) {            
             chatIO.to(receiverSocketId).emit('packet_assigned');
@@ -249,6 +252,9 @@ chatIO.on('connection', async (socket) => {
         if (!delivery) {
             console.error('No se encontró el usuario de entrega');
             return;
+        }
+        if (!delivery._id || !client.id) {
+            throw new Error('Missing required IDs to generate roomId');
         }
         const roomId = [delivery._id, client.id].sort().join('_'); // Ordenar para que sea consistente    
         const newMessage = new MessageModel({

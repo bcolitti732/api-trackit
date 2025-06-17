@@ -210,6 +210,10 @@ chatIO.on('connection', (socket) => __awaiter(void 0, void 0, void 0, function* 
             console.error('No se encontró el usuario de entrega');
             return;
         }
+        if (!delivery._id || !client.id) {
+            console.error('Missing required IDs to generate roomId');
+            return;
+        }
         const roomId = [delivery._id, client.id].sort().join('_');
         const newMessage = new message_1.MessageModel({
             senderId: delivery._id,
@@ -230,6 +234,9 @@ chatIO.on('connection', (socket) => __awaiter(void 0, void 0, void 0, function* 
         if (!delivery) {
             console.error('No se encontró el usuario de entrega');
             return;
+        }
+        if (!delivery._id || !client.id) {
+            throw new Error('Missing required IDs to generate roomId');
         }
         const roomId = [delivery._id, client.id].sort().join('_');
         const newMessage = new message_1.MessageModel({
